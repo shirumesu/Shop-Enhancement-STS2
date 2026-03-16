@@ -1,7 +1,11 @@
 {
-  "pck_name": "ShopEnhancement",
+  "id": "ShopEnhancement",
   "name": "ShopEnhancement",
   "author": "DY",
   "description": "Enhances shops with sell mode, refresh, card removal tweaks, and more strategic rewards.",
-  "version": "v0.2"
+  "version": "v0.4",
+  "has_pck": true,
+  "has_dll": true,
+ "dependencies": ["BaseLib"],
+  "affects_gameplay": true
 }
