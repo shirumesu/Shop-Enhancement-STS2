@@ -287,8 +287,18 @@ public static class ShopRefreshPatches
         // 1. Unsubscribe from old entries
         UnsubscribeFromOldEntries(instance);
 
-        // 2. Create new Inventory
-        MerchantInventory newInventory = MerchantInventory.CreateForNormalMerchant(player);
+        var playerRelicGrabBagSnapshot = player.RelicGrabBag.ToSerializable();
+        var sharedRelicGrabBagSnapshot = player.RunState.SharedRelicGrabBag.ToSerializable();
+        MerchantInventory newInventory;
+        try
+        {
+            newInventory = MerchantInventory.CreateForNormalMerchant(player);
+        }
+        finally
+        {
+            player.RelicGrabBag.LoadFromSerializable(playerRelicGrabBagSnapshot);
+            player.RunState.SharedRelicGrabBag.LoadFromSerializable(sharedRelicGrabBagSnapshot);
+        }
 
         // 2.1 Try to inject cross-class cards
         TryReplaceWithCrossClassCards(newInventory, player);
