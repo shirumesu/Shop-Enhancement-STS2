@@ -16,7 +16,7 @@ public static class ShopNoPurchasePatches
     private static bool _hasPurchasedInCurrentShop = false;
 
     // Reset flag when entering a merchant room
-    [HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.Enter))]
+    [HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.EnterInternal))]
     [HarmonyPostfix]
     public static void Enter_Postfix()
     {

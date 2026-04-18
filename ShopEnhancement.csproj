@@ -59,6 +59,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Remove="ShopRefreshPatches.cs" />
         <Compile Remove="materials\**" />
         <Compile Remove="shaders\**" />
         <Compile Remove="images\**" />

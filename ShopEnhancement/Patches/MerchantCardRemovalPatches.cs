@@ -528,7 +528,7 @@ public static class MerchantCardRemovalPatches
     }
 }
 
-[HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.Enter))]
+[HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.EnterInternal))]
 public static class MerchantRoomVisitCounterPatches
 {
     [HarmonyPostfix]
