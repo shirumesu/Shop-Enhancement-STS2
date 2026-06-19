@@ -34,7 +34,7 @@ public static class CardRewardAlternativePatches
                     // Execute our reward logic
                     return TaskHelper.RunSafely(GiveSkipReward(cardReward.Player));
                 },
-                PostAlternateCardRewardAction.DismissScreenAndRemoveReward // Remove reward to prevent farming
+                PostAlternateCardRewardAction.EndSelectionAndCompleteReward
             );
 
             // Force the hotkey to be "Cancel" (Esc/B) so that:

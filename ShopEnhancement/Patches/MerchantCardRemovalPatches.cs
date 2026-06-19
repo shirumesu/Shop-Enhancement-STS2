@@ -296,12 +296,12 @@ public static class MerchantCardRemovalPatches
     {
         inventory = null!;
         var merchantRoom = NRun.Instance?.MerchantRoom;
-        if (merchantRoom?.Room?.Inventory == null)
+        if (merchantRoom?.Room == null || merchantRoom.Room.Inventories.Count == 0)
         {
             return false;
         }
 
-        inventory = merchantRoom.Room.Inventory;
+        inventory = merchantRoom.Room.GetLocalInventory();
         return true;
     }
 
@@ -528,11 +528,11 @@ public static class MerchantCardRemovalPatches
     }
 }
 
-[HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.Enter))]
+[HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.EnterInternal))]
 public static class MerchantRoomVisitCounterPatches
 {
     [HarmonyPostfix]
-    public static void Enter_Postfix()
+    public static void EnterInternal_Postfix()
     {
         MerchantCardRemovalPatches.IncrementVisit();
     }
@@ -565,12 +565,12 @@ public static class MerchantCardRemovalHoverTipPatches
     [HarmonyPrefix]
     public static bool CreateHoverTip_Prefix(NMerchantCardRemoval __instance)
     {
-        if (NRun.Instance?.MerchantRoom?.Inventory == null)
+        if (NRun.Instance?.MerchantRoom?.Room == null || NRun.Instance.MerchantRoom.Room.Inventories.Count == 0)
         {
             return true;
         }
 
-        MerchantInventory inventory = NRun.Instance.MerchantRoom.Room.Inventory;
+        MerchantInventory inventory = NRun.Instance.MerchantRoom.Room.GetLocalInventory();
         var state = MerchantCardRemovalPatches.EnsureServiceState(inventory);
         if (!state.IsEnchantShop && !state.IsGiftCardShop)
         {
@@ -620,12 +620,12 @@ public static class MerchantCardRemovalCostLabelPatches
     [HarmonyPostfix]
     public static void UpdateVisual_Postfix(NMerchantCardRemoval __instance)
     {
-        if (NRun.Instance?.MerchantRoom?.Room?.Inventory == null)
+        if (NRun.Instance?.MerchantRoom?.Room == null || NRun.Instance.MerchantRoom.Room.Inventories.Count == 0)
         {
             return;
         }
 
-        MerchantInventory inventory = NRun.Instance.MerchantRoom.Room.Inventory;
+        MerchantInventory inventory = NRun.Instance.MerchantRoom.Room.GetLocalInventory();
         var state = MerchantCardRemovalPatches.EnsureServiceState(inventory);
         if ((!state.IsEnchantShop && !state.IsGiftCardShop) || inventory.CardRemovalEntry?.Used != false)
         {

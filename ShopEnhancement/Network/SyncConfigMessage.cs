@@ -16,6 +16,8 @@ public struct SyncConfigMessage : INetMessage, IPacketSerializable
 
     public LogLevel LogLevel => LogLevel.Info;
 
+    public bool ShouldBuffer => true;
+
     public void Serialize(PacketWriter writer)
     {
         writer.WriteString(ConfigJson ?? string.Empty);

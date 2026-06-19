@@ -13,6 +13,8 @@ public class GiftItemMessage : INetMessage
     public NetTransferMode Mode => NetTransferMode.Reliable;
     public LogLevel LogLevel => LogLevel.Info;
 
+    public bool ShouldBuffer => true;
+
     public string ItemId { get; set; } = "";
     public string ItemType { get; set; } = ""; // "Card", "Relic", "Potion"
     public ulong SenderId { get; set; }

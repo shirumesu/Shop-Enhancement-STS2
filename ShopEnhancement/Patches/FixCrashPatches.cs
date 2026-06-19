@@ -124,7 +124,7 @@ public static class ScreenStateTrackerFix
     [HarmonyPrefix]
     public static bool Prefix(ScreenStateTracker __instance)
     {
-        if (RunManager.Instance.IsSinglePlayerOrFakeMultiplayer)
+        if (RunManager.Instance.IsSingleplayerOrFakeMultiplayer)
         {
             return false;
         }
