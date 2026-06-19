@@ -1,12 +1,8 @@
 using System;
-using System.Reflection;
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Multiplayer.Game.PeerInput;
-using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
-using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
 using MegaCrit.Sts2.Core.Runs;
 
@@ -111,49 +107,6 @@ public static class MerchantVisualFinalizer
         }
 
         return exception;
-    }
-}
-
-[HarmonyPatch(typeof(ScreenStateTracker), "OnOverlayStackChanged")]
-public static class ScreenStateTrackerFix
-{
-    private static readonly FieldInfo ConnectedRewardsScreenField = AccessTools.Field(typeof(ScreenStateTracker), "_connectedRewardsScreen");
-    private static readonly FieldInfo OverlayScreenField = AccessTools.Field(typeof(ScreenStateTracker), "_overlayScreen");
-    private static readonly MethodInfo SyncLocalScreenMethod = AccessTools.Method(typeof(ScreenStateTracker), "SyncLocalScreen");
-
-    [HarmonyPrefix]
-    public static bool Prefix(ScreenStateTracker __instance)
-    {
-        if (RunManager.Instance.IsSingleplayerOrFakeMultiplayer)
-        {
-            return false;
-        }
-
-        IOverlayScreen? overlayScreen = NOverlayStack.Instance?.Peek();
-        if (overlayScreen is NRewardsScreen nRewardsScreen)
-        {
-            var callable = CreateSyncLocalScreenCallable(__instance);
-            if (!nRewardsScreen.IsConnected(NRewardsScreen.SignalName.Completed, callable))
-            {
-                nRewardsScreen.Connect(NRewardsScreen.SignalName.Completed, callable);
-            }
-
-            ConnectedRewardsScreenField.SetValue(__instance, nRewardsScreen);
-        }
-        else
-        {
-            ConnectedRewardsScreenField.SetValue(__instance, null);
-        }
-
-        OverlayScreenField.SetValue(__instance, overlayScreen?.ScreenType ?? NetScreenType.None);
-        SyncLocalScreenMethod.Invoke(__instance, null);
-        return false;
-    }
-
-    private static Callable CreateSyncLocalScreenCallable(ScreenStateTracker tracker)
-    {
-        var action = (Action)Delegate.CreateDelegate(typeof(Action), tracker, SyncLocalScreenMethod);
-        return Callable.From(action);
     }
 }
 

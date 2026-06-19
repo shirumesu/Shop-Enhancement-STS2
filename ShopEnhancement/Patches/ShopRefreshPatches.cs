@@ -15,6 +15,7 @@ using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Localization;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
@@ -276,32 +277,23 @@ public static class ShopRefreshPatches
         _refreshCount++;
 
         // Perform Refresh
-        await RefreshInventory(instance, player);
+        RefreshInventory(instance, player);
         
         UpdateRefreshButtonState(instance);
     }
 
 
-    private static async Task RefreshInventory(NMerchantInventory instance, Player player)
+    private static void RefreshInventory(NMerchantInventory instance, Player player)
     {
         // 1. Unsubscribe from old entries
         UnsubscribeFromOldEntries(instance);
 
-        var playerRelicGrabBagSnapshot = player.RelicGrabBag.ToSerializable();
-        var sharedRelicGrabBagSnapshot = player.RunState.SharedRelicGrabBag.ToSerializable();
-        MerchantInventory newInventory;
-        try
-        {
-            newInventory = MerchantInventory.CreateForNormalMerchant(player);
-        }
-        finally
-        {
-            player.RelicGrabBag.LoadFromSerializable(playerRelicGrabBagSnapshot);
-            player.RunState.SharedRelicGrabBag.LoadFromSerializable(sharedRelicGrabBagSnapshot);
-        }
+        MerchantInventory newInventory = MerchantInventory.CreateForNormalMerchant(player);
 
         // 2.1 Try to inject cross-class cards
         TryReplaceWithCrossClassCards(newInventory, player);
+
+        ReplaceRoomInventory(player, newInventory);
 
         // 3. Set Inventory field to null (to bypass Initialize check)
         PropertyInfo inventoryProp = AccessTools.Property(typeof(NMerchantInventory), "Inventory");
@@ -332,6 +324,21 @@ public static class ShopRefreshPatches
 
         // 6. Optional: Play sound
         // SfxCmd.Play("event:/sfx/npcs/merchant/merchant_welcome");
+    }
+
+    private static void ReplaceRoomInventory(Player player, MerchantInventory newInventory)
+    {
+        MerchantRoom? room = NRun.Instance?.MerchantRoom?.Room;
+        if (room == null)
+        {
+            return;
+        }
+
+        int index = room.Inventories.FindIndex(inventory => inventory.Player.NetId == player.NetId);
+        if (index >= 0)
+        {
+            room.Inventories[index] = newInventory;
+        }
     }
 
     private static void DisconnectSlots(Node node)

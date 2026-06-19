@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
@@ -13,22 +14,22 @@ namespace ShopEnhancement.Patches;
 [HarmonyPatch]
 public static class ShopNoPurchasePatches
 {
-    private static bool _hasPurchasedInCurrentShop = false;
+    private static readonly HashSet<ulong> PlayersPurchasedInCurrentShop = new();
 
     // Reset flag when entering a merchant room
     [HarmonyPatch(typeof(MerchantRoom), nameof(MerchantRoom.EnterInternal))]
     [HarmonyPostfix]
     public static void EnterInternal_Postfix()
     {
-        _hasPurchasedInCurrentShop = false;
+        PlayersPurchasedInCurrentShop.Clear();
     }
 
     // Set flag when an item is purchased
     [HarmonyPatch(typeof(Hook), nameof(Hook.AfterItemPurchased))]
     [HarmonyPostfix]
-    public static void AfterItemPurchased_Postfix()
+    public static void AfterItemPurchased_Postfix(Player player)
     {
-        _hasPurchasedInCurrentShop = true;
+        PlayersPurchasedInCurrentShop.Add(player.NetId);
     }
 
     // Check flag and reward when exiting
@@ -37,7 +38,6 @@ public static class ShopNoPurchasePatches
     public static void Exit_Prefix(IRunState? runState)
     {
         if (!ShopEnhancementConfig.EnableNoPurchaseReward) return;
-        if (_hasPurchasedInCurrentShop) return;
 
         // Ensure runState and player are valid
         if (runState == null) return;
@@ -53,6 +53,7 @@ public static class ShopNoPurchasePatches
         
         Player? player = MegaCrit.Sts2.Core.Context.LocalContext.GetMe(runState);
         if (player == null) return;
+        if (PlayersPurchasedInCurrentShop.Contains(player.NetId)) return;
 
         // Give Gold
         // We fire it as a command. It might be processed after the screen hide started, 

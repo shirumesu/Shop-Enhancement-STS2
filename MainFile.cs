@@ -21,25 +21,29 @@ public partial class MainFile : Node
 
     public static void Initialize()
     {
-        Harmony.DEBUG = true;
+        bool enableHarmonyDebug = IsHarmonyDebugEnabled();
+        Harmony.DEBUG = enableHarmonyDebug;
         var fileLogType = Type.GetType("HarmonyLib.HarmonyFileLog, 0Harmony") ?? Type.GetType("HarmonyLib.FileLog, 0Harmony");
         if (fileLogType != null)
         {
             var enabledProp = fileLogType.GetProperty("Enabled", BindingFlags.Public | BindingFlags.Static);
             if (enabledProp != null && enabledProp.CanWrite)
             {
-                enabledProp.SetValue(null, true);
+                enabledProp.SetValue(null, enableHarmonyDebug);
             }
-            var logPathProp = fileLogType.GetProperty("LogPath", BindingFlags.Public | BindingFlags.Static);
-            if (logPathProp != null && logPathProp.CanWrite)
+            if (enableHarmonyDebug)
             {
-                var logPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Harmony.log");
-                logPathProp.SetValue(null, logPath);
-            }
-            var logMethod = fileLogType.GetMethod("Log", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
-            if (logMethod != null)
-            {
-                logMethod.Invoke(null, new object[] { "Harmony debug enabled" });
+                var logPathProp = fileLogType.GetProperty("LogPath", BindingFlags.Public | BindingFlags.Static);
+                if (logPathProp != null && logPathProp.CanWrite)
+                {
+                    var logPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Harmony.log");
+                    logPathProp.SetValue(null, logPath);
+                }
+                var logMethod = fileLogType.GetMethod("Log", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+                if (logMethod != null)
+                {
+                    logMethod.Invoke(null, new object[] { "Harmony debug enabled" });
+                }
             }
         }
 
@@ -50,6 +54,11 @@ public partial class MainFile : Node
         harmony.PatchAll();
 
         ShopEnhancementNetwork.Initialize();
+    }
+
+    private static bool IsHarmonyDebugEnabled()
+    {
+        return false;
     }
 
     public static void OnLocaleChanged()

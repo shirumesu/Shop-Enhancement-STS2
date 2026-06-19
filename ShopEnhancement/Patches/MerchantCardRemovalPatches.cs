@@ -598,7 +598,12 @@ public static class MerchantCardRemovalHoverTipPatches
             description.Add("3", state.EnchantCost);
         }
 
-        NHoverTipSet tipSet = NHoverTipSet.CreateAndShow(__instance, new HoverTip(title, description));
+        NHoverTipSet? tipSet = NHoverTipSet.CreateAndShow(__instance, new HoverTip(title, description));
+        if (tipSet == null)
+        {
+            return false;
+        }
+
         tipSet.GlobalPosition = __instance.GlobalPosition;
         if (__instance.GlobalPosition.X > __instance.GetViewport().GetVisibleRect().Size.X * 0.5f)
         {

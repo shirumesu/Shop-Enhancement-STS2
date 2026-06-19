@@ -9,7 +9,7 @@ namespace ShopEnhancement.Network;
 
 public class GiftItemMessage : INetMessage
 {
-    public bool ShouldBroadcast => false;
+    public bool ShouldBroadcast => true;
     public NetTransferMode Mode => NetTransferMode.Reliable;
     public LogLevel LogLevel => LogLevel.Info;
 

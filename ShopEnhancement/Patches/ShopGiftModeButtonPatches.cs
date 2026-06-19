@@ -265,8 +265,15 @@ public static class ShopGiftModeButtonPatches
             style.BgColor = new Color(0.15f, 0.15f, 0.22f, 0.92f);
             style.BorderColor = new Color(0.8f, 0.65f, 0.3f); // Keep gold/yellow border for consistency with UI theme
         }
-        holder.TargetLabel.Modulate = Colors.Yellow;      
-        holder.TargetButton.Modulate = Colors.White;
+        if (holder.TargetLabel != null)
+        {
+            holder.TargetLabel.Modulate = Colors.Yellow;
+        }
+
+        if (holder.TargetButton != null)
+        {
+            holder.TargetButton.Modulate = Colors.White;
+        }
     }
 
     private static void UpdateTargetButtonVisual(ButtonHolder holder, NMerchantInventory inventory)
@@ -307,7 +314,10 @@ public static class ShopGiftModeButtonPatches
         style.BorderColor = new Color(0.8f, 0.65f, 0.3f);
         //设置字体颜色
         holder.TargetLabel.Modulate = Colors.Yellow;      
-        holder.TargetButton.Modulate = Colors.White;
+        if (holder.TargetButton != null)
+        {
+            holder.TargetButton.Modulate = Colors.White;
+        }
     }
 
     private static void CycleTargetPlayer(NMerchantInventory inventory)
