@@ -48,6 +48,7 @@ public partial class MainFile : Node
         }
 
         ConfigManager.Load();
+        ShopEnhancementBaseLibConfig.Register(ModId);
 
         Harmony harmony = new(ModId);
 

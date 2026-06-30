@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable> <!--Makes code analysis regarding null values stricter.-->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyName>ShopEnhancement</AssemblyName>
+        <ModOutputDir Condition="'$(ModOutputDir)' == ''">$(MSBuildProjectDirectory)\publish\$(AssemblyName)</ModOutputDir>
     </PropertyGroup>
 
     <!-- OS Detection -->
@@ -23,7 +24,6 @@
         <SteamLibraryPath Condition="'$(SteamLibraryPath)' == '' and '$(SteamRoot)' != ''">$(SteamRoot)\steamapps</SteamLibraryPath>
         <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
         <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_windows_x86_64</Sts2DataDir>
-        <GodotPath Condition="'$(GodotPath)' == ''">D:\1DevTools\Godot_v4.5-stable_mono_win64\Godot_v4.5-stable_mono_win64.exe</GodotPath>
     </PropertyGroup>
 
     <!-- Linux -->
@@ -81,15 +81,15 @@
         </PackageReference>
     </ItemGroup>
 
-    <Target Name="CopyToModsFolderOnBuild" AfterTargets="PostBuildEvent">
-        <Message Text="Copying .dll and manifest to mods folder." Importance="high" />
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(Sts2Path)\mods\$(AssemblyName)\" />
-        <Copy SourceFiles="mod_manifest.json" DestinationFolder="$(Sts2Path)\mods\$(AssemblyName)\" />
+    <Target Name="CopyToLocalModOutputOnBuild" AfterTargets="PostBuildEvent">
+        <Message Text="Copying .dll and manifest to local mod output folder: $(ModOutputDir)" Importance="high" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModOutputDir)\" />
+        <Copy SourceFiles="mod_manifest.json" DestinationFolder="$(ModOutputDir)\" />
     </Target>
 
     <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
-        <Message Text="Exporting Godot .pck to mods folder" Importance="high" />
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(Sts2Path)/mods/$(AssemblyName)/$(AssemblyName).pck&quot;" EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1" ContinueOnError="WarnAndContinue" />
+        <Message Text="Exporting Godot .pck to local mod output folder: $(ModOutputDir)" Importance="high" />
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(ModOutputDir)/$(AssemblyName).pck&quot;" EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1" ContinueOnError="WarnAndContinue" />
     </Target>
 
     <Target Name="GodotPublishSkipped" AfterTargets="Publish" Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')">

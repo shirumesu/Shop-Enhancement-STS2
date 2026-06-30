@@ -35,8 +35,7 @@ Dependency: [BaseLib-StS2](https://github.com/Alchyr/BaseLib-StS2)
   - Fixed an issue where receiving `SyncConfigMessage` could throw `no message handlers are registered for that type`.
   - Message handlers are now registered earlier during character-select/network lifecycle to prevent remote config sync errors.
 - **Configuration Panel**:
-  - Added a Shop Config entry in the main menu so players can tune shop-enhancement values in UI.
-  - Supports preset save/load/switch to quickly apply different balance setups.
+  - Moved shop-enhancement settings into the BaseLib mod configuration page.
 
 ### v0.3
 - **Added Gift Mode**:
@@ -110,10 +109,13 @@ Execute in the project root directory:
 dotnet publish -c Release
 ```
 
-After a successful build, Mod files will be automatically copied to the game's `mods` folder:
+After a successful build, Mod files will be written to `publish/ShopEnhancement`:
 - `ShopEnhancement.dll`
 - `ShopEnhancement.pck` (if resources exist)
 - `mod_manifest.json`
+
+You can override the local output folder with `-p:ModOutputDir=<path>`.
+To export `ShopEnhancement.pck`, also pass `-p:GodotPath=<path-to-godot-console>`.
 
 ## Direct Installation
 
@@ -133,4 +135,4 @@ Download `BaseLib.dll` and `BaseLib.pck` from its releases and place them in the
 ## Notes
 
 - The mod injects logic via Harmony; compatibility depends on the game version.
-- If export fails or the game prompts that it is not loaded, prioritize checking if the game directory `mods` contains `ShopEnhancement.dll` and `mod_manifest.json`.
+- If export fails or the game prompts that it is not loaded, first check whether `publish/ShopEnhancement` contains `ShopEnhancement.dll`, `ShopEnhancement.pck`, and `mod_manifest.json`, then copy that folder into the game `mods` directory for local testing.

@@ -10,3 +10,9 @@ Properties/
 *.import
 *.uid
 *.user
+
+# Local Steam Workshop upload files
+.workshop/
+
+# Gei spec system - internal agent state, not product source
+spec/

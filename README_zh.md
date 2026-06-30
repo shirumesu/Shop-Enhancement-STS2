@@ -33,8 +33,7 @@ Base By https://github.com/Alchyr/ModTemplate-StS2
   - 修复了接收 `SyncConfigMessage` 时可能报错 `no message handlers are registered for that type` 的问题。
   - 将消息处理器注册时机提前到角色选择/网络生命周期阶段，避免远程配置同步异常。
 - **配置面板功能**：
-  - 主菜单新增商店配置面板入口，可在界面中直接调整商店增强参数。
-  - 支持预设保存、读取与切换，方便快速应用不同玩法配置。
+  - 商店增强参数已迁移到 BaseLib 的 Mod 配置页，不再使用主菜单右下角入口。
 
 ### v0.3
 - **新增送礼模式 (Gift Mode)**：
@@ -108,11 +107,13 @@ Base By https://github.com/Alchyr/ModTemplate-StS2
 dotnet publish -c Release
 ```
 
-构建成功后，Mod 文件将自动复制到游戏目录的 `mods` 文件夹：
+构建成功后，Mod 文件会输出到 `publish/ShopEnhancement`：
 - `ShopEnhancement.dll`
 - `ShopEnhancement.pck` (如果有资源)
 - `mod_manifest.json`
-- 
+
+可以用 `-p:ModOutputDir=<path>` 覆盖本地输出目录。
+如需导出 `ShopEnhancement.pck`，还需要传入 `-p:GodotPath=<Godot 控制台程序路径>`。
 ## 直接安装
 
 见右侧 releases 。
@@ -131,4 +132,4 @@ dotnet publish -c Release
 ## 备注
 
 - 模组通过 Harmony 注入逻辑，兼容性取决于游戏版本。
-- 若导出失败或游戏提示未加载，优先检查游戏目录 `mods` 是否包含 `ShopEnhancement.dll` 与 `mod_manifest.json`。
+- 若导出失败或游戏提示未加载，先检查 `publish/ShopEnhancement` 是否包含 `ShopEnhancement.dll`、`ShopEnhancement.pck` 与 `mod_manifest.json`，再将该目录复制到游戏 `mods` 目录进行本地测试。

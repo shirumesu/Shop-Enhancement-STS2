@@ -39,13 +39,13 @@ public class ConfigData
     public bool EnableGiftMode { get; set; } = true;
     public bool EnableRemovalEnchantRandom { get; set; } = true;
     public bool EnableEnchantService { get; set; } = true;
-    public int EnchantStartShopVisit { get; set; } = 5;
-    public float EnchantReplaceChance { get; set; } = 0.35f;
-    public int EnchantCost { get; set; } = 90;
-    public Vector2I EnchantAmountRange { get; set; } = new Vector2I(1, 1);
-    public Vector2I EnchantCardCountRange { get; set; } = new Vector2I(1, 1);
+    public int EnchantStartShopVisit { get; set; } = 4;
+    public float EnchantReplaceChance { get; set; } = 0.3f;
+    public int EnchantCost { get; set; } = 105;
+    public Vector2I EnchantAmountRange { get; set; } = new Vector2I(1, 2);
+    public Vector2I EnchantCardCountRange { get; set; } = new Vector2I(1, 2);
     public bool EnableRandomTeammateGiftService { get; set; } = true;
-    public Vector2I GiftServiceCardCountRange { get; set; } = new Vector2I(1, 2);
-    public int GiftServiceBaseCost { get; set; } = 70;
-    public int GiftServiceStepCost { get; set; } = 40;
+    public Vector2I GiftServiceCardCountRange { get; set; } = new Vector2I(1, 1);
+    public int GiftServiceBaseCost { get; set; } = 85;
+    public int GiftServiceStepCost { get; set; } = 55;
 }
