@@ -1,14 +1,17 @@
-.godot/
+# Build output
 bin/
+obj/
+.godot/
+publish/
 /android/
-.git/
+
+# IDE and local settings
 .idea/
 .vs/
-publish/
 Properties/
 .editorconfig
-*.import
-*.uid
+*.code-workspace
+*.DotSettings
 *.user
 
 # Local Steam Workshop upload files

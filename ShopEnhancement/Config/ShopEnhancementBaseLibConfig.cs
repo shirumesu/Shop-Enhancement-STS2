@@ -7,34 +7,34 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 {
     private static bool _syncing;
 
-    [ConfigSection("Card Removal")]
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSection("CardRemoval")]
+    [ConfigSlider(0, 200, 1)]
     public static int RemoveBaseCost { get; set; } = 50;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 100, 1)]
     public static int RemoveStepCost { get; set; } = 25;
 
     public static bool UseLinearCost { get; set; } = true;
 
-    [ConfigSlider(0, 99, 1)]
+    [ConfigSlider(0, 20, 1)]
     public static int RemoveLimitPerShop { get; set; } = 3;
 
-    [ConfigSection("Shop Refresh")]
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSection("ShopRefresh")]
+    [ConfigSlider(0, 99, 1)]
     public static int RefreshCost { get; set; } = 40;
 
-    [ConfigSlider(0, 99, 1)]
+    [ConfigSlider(0, 20, 1)]
     public static int RefreshLimitPerShop { get; set; } = 3;
 
     [ConfigSection("Rewards")]
     public static bool EnableNoPurchaseReward { get; set; } = true;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int NoPurchaseRewardGold { get; set; } = 15;
 
     public static bool EnableSkipCardRewardGold { get; set; } = true;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int SkipCardRewardGoldAmount { get; set; } = 15;
 
     [ConfigSection("Cards")]
@@ -43,7 +43,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 1, 0.01)]
     public static float CrossClassCardChance { get; set; } = 0.2f;
 
-    [ConfigButton("Run Now")]
+    [ConfigButton("UnlockAllRunNow")]
     public static void RunUnlockAllOnce()
     {
         ConfigData data = ToConfigData();
@@ -52,19 +52,19 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         CopyFromRuntimeConfig();
     }
 
-    [ConfigSection("Sell Mode")]
+    [ConfigSection("SellMode")]
     public static bool EnableSellMode { get; set; } = true;
 
-    [ConfigSlider(0, 10, 0.01)]
+    [ConfigSlider(0, 5, 0.01)]
     public static float SellRelicPriceRatio { get; set; } = 0.35f;
 
-    [ConfigSlider(0, 10, 0.01)]
+    [ConfigSlider(0, 5, 0.01)]
     public static float SellPotionPriceRatio { get; set; } = 0.25f;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int SellRelicMinGold { get; set; } = 30;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int SellPotionMinGold { get; set; } = 15;
 
     public static bool RequireSellDoubleClick { get; set; } = true;
@@ -72,14 +72,14 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 10000, 100)]
     public static int SellConfirmWindowMs { get; set; } = 1800;
 
-    [ConfigSection("Relic Base Prices")]
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSection("RelicBasePrices")]
+    [ConfigSlider(0, 999, 1)]
     public static int SellAncientRelicBasePrice { get; set; } = 750;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int SellStarterRelicBasePrice { get; set; } = 300;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int SellEventRelicBasePrice { get; set; } = 200;
 
     [ConfigSection("Other")]
@@ -90,13 +90,13 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
     public static bool EnableEnchantService { get; set; } = true;
 
-    [ConfigSlider(1, 99, 1)]
+    [ConfigSlider(1, 10, 1)]
     public static int EnchantStartShopVisit { get; set; } = 4;
 
     [ConfigSlider(0, 1, 0.01)]
     public static float EnchantReplaceChance { get; set; } = 0.3f;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int EnchantCost { get; set; } = 105;
 
     [ConfigSlider(1, 999, 1)]
@@ -119,10 +119,10 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(1, 20, 1)]
     public static int GiftServiceCardCountMax { get; set; } = 1;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int GiftServiceBaseCost { get; set; } = 85;
 
-    [ConfigSlider(0, 9999, 1)]
+    [ConfigSlider(0, 999, 1)]
     public static int GiftServiceStepCost { get; set; } = 55;
 
     public static void Register(string modId)
