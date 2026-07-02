@@ -5,13 +5,12 @@ namespace ShopEnhancement.Config;
 
 public class ShopEnhancementBaseLibConfig : SimpleModConfig
 {
+    private const string FractionSliderFormat = "{0:0.##}";
     private static bool _syncing;
 
     [ConfigSection("CardRemoval")]
-    [ConfigHoverTip]
-    public static bool UseLinearCost { get; set; } = true;
-
     [ConfigSlider(0, 200, 1)]
+    [ConfigHoverTip]
     public static int RemoveBaseCost { get; set; } = 50;
 
     [ConfigSlider(0, 100, 1)]
@@ -41,7 +40,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSection("Cards")]
     public static bool EnableCrossClassCards { get; set; } = true;
 
-    [ConfigSlider(0, 1, 0.01)]
+    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float CrossClassCardChance { get; set; } = 0.2f;
 
     [ConfigButton("UnlockAllRunNow")]
@@ -86,7 +85,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     public static int SellEventRelicPrice { get; set; } = 80;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 1, 0.01)]
+    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float SellRelicPriceVariance { get; set; } = 0.2f;
 
     [ConfigSlider(0, 999, 1)]
@@ -105,7 +104,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     public static int SellRarePotionPrice { get; set; } = 40;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 1, 0.01)]
+    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float SellPotionPriceVariance { get; set; } = 0.2f;
 
     [ConfigSlider(0, 999, 1)]
@@ -122,7 +121,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(1, 10, 1)]
     public static int EnchantStartShopVisit { get; set; } = 4;
 
-    [ConfigSlider(0, 1, 0.01)]
+    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float EnchantReplaceChance { get; set; } = 0.3f;
 
     [ConfigSlider(0, 999, 1)]
@@ -191,7 +190,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
         RemoveBaseCost = data.RemoveBaseCost;
         RemoveStepCost = data.RemoveStepCost;
-        UseLinearCost = data.UseLinearCost;
         RemoveLimitPerShop = data.RemoveLimitPerShop;
         RefreshCost = data.RefreshCost;
         RefreshLimitPerShop = data.RefreshLimitPerShop;
@@ -239,7 +237,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         {
             RemoveBaseCost = RemoveBaseCost,
             RemoveStepCost = RemoveStepCost,
-            UseLinearCost = UseLinearCost,
             RemoveLimitPerShop = RemoveLimitPerShop,
             RefreshCost = RefreshCost,
             RefreshLimitPerShop = RefreshLimitPerShop,

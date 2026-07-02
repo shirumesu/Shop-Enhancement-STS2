@@ -7,7 +7,6 @@ public class ConfigData
 {
     public int RemoveBaseCost { get; set; } = 50;
     public int RemoveStepCost { get; set; } = 25;
-    public bool UseLinearCost { get; set; } = true;
     public int RemoveLimitPerShop { get; set; } = 3;
 
     public int RefreshCost { get; set; } = 40;

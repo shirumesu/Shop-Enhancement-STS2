@@ -80,10 +80,7 @@ public static class MerchantCardRemovalPatches
             }
         }
 
-        if (ShopEnhancementConfig.UseLinearCost)
-        {
-            ____cost = ShopEnhancementConfig.RemoveBaseCost + (ShopEnhancementConfig.RemoveStepCost * ____player.ExtraFields.CardShopRemovalsUsed);
-        }
+        ____cost = ShopEnhancementConfig.RemoveBaseCost + (ShopEnhancementConfig.RemoveStepCost * ____player.ExtraFields.CardShopRemovalsUsed);
     }
 
     [HarmonyPatch(nameof(MerchantCardRemovalEntry.OnTryPurchaseWrapper))]

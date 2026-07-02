@@ -137,7 +137,6 @@ public static class ConfigManager
         {
             RemoveBaseCost = ShopEnhancementConfig.RemoveBaseCost,
             RemoveStepCost = ShopEnhancementConfig.RemoveStepCost,
-            UseLinearCost = ShopEnhancementConfig.UseLinearCost,
             RemoveLimitPerShop = ShopEnhancementConfig.RemoveLimitPerShop,
             RefreshCost = ShopEnhancementConfig.RefreshCost,
             RefreshLimitPerShop = ShopEnhancementConfig.RefreshLimitPerShop,
@@ -182,7 +181,6 @@ public static class ConfigManager
     {
         ShopEnhancementConfig.RemoveBaseCost = data.RemoveBaseCost;
         ShopEnhancementConfig.RemoveStepCost = data.RemoveStepCost;
-        ShopEnhancementConfig.UseLinearCost = data.UseLinearCost;
         ShopEnhancementConfig.RemoveLimitPerShop = data.RemoveLimitPerShop;
         ShopEnhancementConfig.RefreshCost = data.RefreshCost;
         ShopEnhancementConfig.RefreshLimitPerShop = data.RefreshLimitPerShop;

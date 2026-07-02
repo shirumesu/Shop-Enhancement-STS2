@@ -7,7 +7,6 @@ public static class ShopEnhancementConfig
     // Requirement 1: Modify card removal cost
     public static int RemoveBaseCost { get; set; } = 50; // Base cost for the first removal. 50 is cheaper than vanilla (75) to encourage deck thinning, but not free.
     public static int RemoveStepCost { get; set; } = 25; // Increase per removal. Standard scaling.
-    public static bool UseLinearCost { get; set; } = true; // If false, use vanilla formula (75 + 25 * count)
 
     // Requirement 2: Modify card removal limit
     public static int RemoveLimitPerShop { get; set; } = 3; // 3 removals allow for aggressive thinning if you have the gold (50+75+100=225g).
