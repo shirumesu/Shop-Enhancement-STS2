@@ -36,8 +36,6 @@ public static class ShopEnhancementConfig
     public static float SellPotionPriceRatio { get; set; } = 0.25f; // 大幅下调至 25%，药水是消耗品，避免变成“炼金刷钱”流
     public static int SellRelicMinGold { get; set; } = 30; // 略微提升保底，蚊子腿也是肉
     public static int SellPotionMinGold { get; set; } = 15;
-    public static bool RequireSellDoubleClick { get; set; } = true;
-    public static int SellConfirmWindowMs { get; set; } = 1800;
 
     // Requirement 8: Custom base prices for special relics (Original game uses 999 for all of these)
     public static int SellAncientRelicBasePrice { get; set; } = 750; // Boss 遗物非常珍贵，卖掉它应该能换回一个顶级商店遗物 (750 * 0.35 ≈ 262g)

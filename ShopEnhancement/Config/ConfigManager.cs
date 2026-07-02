@@ -153,8 +153,6 @@ public static class ConfigManager
             SellPotionPriceRatio = ShopEnhancementConfig.SellPotionPriceRatio,
             SellRelicMinGold = ShopEnhancementConfig.SellRelicMinGold,
             SellPotionMinGold = ShopEnhancementConfig.SellPotionMinGold,
-            RequireSellDoubleClick = ShopEnhancementConfig.RequireSellDoubleClick,
-            SellConfirmWindowMs = ShopEnhancementConfig.SellConfirmWindowMs,
             SellAncientRelicBasePrice = ShopEnhancementConfig.SellAncientRelicBasePrice,
             SellStarterRelicBasePrice = ShopEnhancementConfig.SellStarterRelicBasePrice,
             SellEventRelicBasePrice = ShopEnhancementConfig.SellEventRelicBasePrice,
@@ -193,8 +191,6 @@ public static class ConfigManager
         ShopEnhancementConfig.SellPotionPriceRatio = data.SellPotionPriceRatio;
         ShopEnhancementConfig.SellRelicMinGold = data.SellRelicMinGold;
         ShopEnhancementConfig.SellPotionMinGold = data.SellPotionMinGold;
-        ShopEnhancementConfig.RequireSellDoubleClick = data.RequireSellDoubleClick;
-        ShopEnhancementConfig.SellConfirmWindowMs = data.SellConfirmWindowMs;
         ShopEnhancementConfig.SellAncientRelicBasePrice = data.SellAncientRelicBasePrice;
         ShopEnhancementConfig.SellStarterRelicBasePrice = data.SellStarterRelicBasePrice;
         ShopEnhancementConfig.SellEventRelicBasePrice = data.SellEventRelicBasePrice;

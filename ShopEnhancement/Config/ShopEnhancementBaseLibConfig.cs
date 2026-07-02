@@ -8,13 +8,14 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     private static bool _syncing;
 
     [ConfigSection("CardRemoval")]
+    [ConfigHoverTip]
+    public static bool UseLinearCost { get; set; } = true;
+
     [ConfigSlider(0, 200, 1)]
     public static int RemoveBaseCost { get; set; } = 50;
 
     [ConfigSlider(0, 100, 1)]
     public static int RemoveStepCost { get; set; } = 25;
-
-    public static bool UseLinearCost { get; set; } = true;
 
     [ConfigSlider(0, 20, 1)]
     public static int RemoveLimitPerShop { get; set; } = 3;
@@ -66,11 +67,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
     [ConfigSlider(0, 999, 1)]
     public static int SellPotionMinGold { get; set; } = 15;
-
-    public static bool RequireSellDoubleClick { get; set; } = true;
-
-    [ConfigSlider(0, 10000, 100)]
-    public static int SellConfirmWindowMs { get; set; } = 1800;
 
     [ConfigSection("RelicBasePrices")]
     [ConfigSlider(0, 999, 1)]
@@ -177,8 +173,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         SellPotionPriceRatio = data.SellPotionPriceRatio;
         SellRelicMinGold = data.SellRelicMinGold;
         SellPotionMinGold = data.SellPotionMinGold;
-        RequireSellDoubleClick = data.RequireSellDoubleClick;
-        SellConfirmWindowMs = data.SellConfirmWindowMs;
         SellAncientRelicBasePrice = data.SellAncientRelicBasePrice;
         SellStarterRelicBasePrice = data.SellStarterRelicBasePrice;
         SellEventRelicBasePrice = data.SellEventRelicBasePrice;
@@ -221,8 +215,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             SellPotionPriceRatio = SellPotionPriceRatio,
             SellRelicMinGold = SellRelicMinGold,
             SellPotionMinGold = SellPotionMinGold,
-            RequireSellDoubleClick = RequireSellDoubleClick,
-            SellConfirmWindowMs = SellConfirmWindowMs,
             SellAncientRelicBasePrice = SellAncientRelicBasePrice,
             SellStarterRelicBasePrice = SellStarterRelicBasePrice,
             SellEventRelicBasePrice = SellEventRelicBasePrice,

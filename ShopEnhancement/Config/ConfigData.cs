@@ -29,8 +29,6 @@ public class ConfigData
     public float SellPotionPriceRatio { get; set; } = 0.25f;
     public int SellRelicMinGold { get; set; } = 30;
     public int SellPotionMinGold { get; set; } = 15;
-    public bool RequireSellDoubleClick { get; set; } = true;
-    public int SellConfirmWindowMs { get; set; } = 1800;
 
     public int SellAncientRelicBasePrice { get; set; } = 750;
     public int SellStarterRelicBasePrice { get; set; } = 300;
