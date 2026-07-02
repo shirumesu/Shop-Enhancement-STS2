@@ -54,29 +54,62 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     }
 
     [ConfigSection("SellMode")]
+    [ConfigHoverTip]
     public static bool EnableSellMode { get; set; } = true;
 
-    [ConfigSlider(0, 5, 0.01)]
-    public static float SellRelicPriceRatio { get; set; } = 0.35f;
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellCommonRelicPrice { get; set; } = 70;
 
-    [ConfigSlider(0, 5, 0.01)]
-    public static float SellPotionPriceRatio { get; set; } = 0.25f;
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellUncommonRelicPrice { get; set; } = 90;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellRareRelicPrice { get; set; } = 110;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellShopRelicPrice { get; set; } = 80;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellAncientRelicPrice { get; set; } = 240;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellStarterRelicPrice { get; set; } = 240;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellEventRelicPrice { get; set; } = 80;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 1, 0.01)]
+    public static float SellRelicPriceVariance { get; set; } = 0.2f;
 
     [ConfigSlider(0, 999, 1)]
     public static int SellRelicMinGold { get; set; } = 30;
 
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellCommonPotionPrice { get; set; } = 20;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellUncommonPotionPrice { get; set; } = 30;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 999, 1)]
+    public static int SellRarePotionPrice { get; set; } = 40;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 1, 0.01)]
+    public static float SellPotionPriceVariance { get; set; } = 0.2f;
+
     [ConfigSlider(0, 999, 1)]
     public static int SellPotionMinGold { get; set; } = 15;
-
-    [ConfigSection("RelicBasePrices")]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellAncientRelicBasePrice { get; set; } = 750;
-
-    [ConfigSlider(0, 999, 1)]
-    public static int SellStarterRelicBasePrice { get; set; } = 300;
-
-    [ConfigSlider(0, 999, 1)]
-    public static int SellEventRelicBasePrice { get; set; } = 200;
 
     [ConfigSection("Other")]
     public static bool EnableGiftMode { get; set; } = true;
@@ -169,13 +202,20 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         EnableCrossClassCards = data.EnableCrossClassCards;
         CrossClassCardChance = data.CrossClassCardChance;
         EnableSellMode = data.EnableSellMode;
-        SellRelicPriceRatio = data.SellRelicPriceRatio;
-        SellPotionPriceRatio = data.SellPotionPriceRatio;
+        SellCommonRelicPrice = data.SellCommonRelicPrice;
+        SellUncommonRelicPrice = data.SellUncommonRelicPrice;
+        SellRareRelicPrice = data.SellRareRelicPrice;
+        SellShopRelicPrice = data.SellShopRelicPrice;
+        SellAncientRelicPrice = data.SellAncientRelicPrice;
+        SellStarterRelicPrice = data.SellStarterRelicPrice;
+        SellEventRelicPrice = data.SellEventRelicPrice;
+        SellRelicPriceVariance = data.SellRelicPriceVariance;
         SellRelicMinGold = data.SellRelicMinGold;
+        SellCommonPotionPrice = data.SellCommonPotionPrice;
+        SellUncommonPotionPrice = data.SellUncommonPotionPrice;
+        SellRarePotionPrice = data.SellRarePotionPrice;
+        SellPotionPriceVariance = data.SellPotionPriceVariance;
         SellPotionMinGold = data.SellPotionMinGold;
-        SellAncientRelicBasePrice = data.SellAncientRelicBasePrice;
-        SellStarterRelicBasePrice = data.SellStarterRelicBasePrice;
-        SellEventRelicBasePrice = data.SellEventRelicBasePrice;
         EnableGiftMode = data.EnableGiftMode;
         EnableRemovalEnchantRandom = data.EnableRemovalEnchantRandom;
         EnableEnchantService = data.EnableEnchantService;
@@ -211,13 +251,20 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             CrossClassCardChance = CrossClassCardChance,
             EnableUnlockAll = false,
             EnableSellMode = EnableSellMode,
-            SellRelicPriceRatio = SellRelicPriceRatio,
-            SellPotionPriceRatio = SellPotionPriceRatio,
+            SellCommonRelicPrice = SellCommonRelicPrice,
+            SellUncommonRelicPrice = SellUncommonRelicPrice,
+            SellRareRelicPrice = SellRareRelicPrice,
+            SellShopRelicPrice = SellShopRelicPrice,
+            SellAncientRelicPrice = SellAncientRelicPrice,
+            SellStarterRelicPrice = SellStarterRelicPrice,
+            SellEventRelicPrice = SellEventRelicPrice,
+            SellRelicPriceVariance = SellRelicPriceVariance,
             SellRelicMinGold = SellRelicMinGold,
+            SellCommonPotionPrice = SellCommonPotionPrice,
+            SellUncommonPotionPrice = SellUncommonPotionPrice,
+            SellRarePotionPrice = SellRarePotionPrice,
+            SellPotionPriceVariance = SellPotionPriceVariance,
             SellPotionMinGold = SellPotionMinGold,
-            SellAncientRelicBasePrice = SellAncientRelicBasePrice,
-            SellStarterRelicBasePrice = SellStarterRelicBasePrice,
-            SellEventRelicBasePrice = SellEventRelicBasePrice,
             EnableGiftMode = EnableGiftMode,
             EnableRemovalEnchantRandom = EnableRemovalEnchantRandom,
             EnableEnchantService = EnableEnchantService,

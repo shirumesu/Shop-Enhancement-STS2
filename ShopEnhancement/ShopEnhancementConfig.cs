@@ -32,15 +32,20 @@ public static class ShopEnhancementConfig
     public static bool EnableUnlockAll { get; set; } = false;
 
     public static bool EnableSellMode { get; set; } = true;
-    public static float SellRelicPriceRatio { get; set; } = 0.35f; // 下调至 35%，防止无脑卖遗物，强调决策成本
-    public static float SellPotionPriceRatio { get; set; } = 0.25f; // 大幅下调至 25%，药水是消耗品，避免变成“炼金刷钱”流
-    public static int SellRelicMinGold { get; set; } = 30; // 略微提升保底，蚊子腿也是肉
+    public static int SellCommonRelicPrice { get; set; } = 61;
+    public static int SellUncommonRelicPrice { get; set; } = 78;
+    public static int SellRareRelicPrice { get; set; } = 96;
+    public static int SellShopRelicPrice { get; set; } = 70;
+    public static int SellAncientRelicPrice { get; set; } = 245;
+    public static int SellStarterRelicPrice { get; set; } = 245;
+    public static int SellEventRelicPrice { get; set; } = 70;
+    public static float SellRelicPriceVariance { get; set; } = 0.15f;
+    public static int SellRelicMinGold { get; set; } = 30;
+    public static int SellCommonPotionPrice { get; set; } = 17;
+    public static int SellUncommonPotionPrice { get; set; } = 26;
+    public static int SellRarePotionPrice { get; set; } = 35;
+    public static float SellPotionPriceVariance { get; set; } = 0.15f;
     public static int SellPotionMinGold { get; set; } = 15;
-
-    // Requirement 8: Custom base prices for special relics (Original game uses 999 for all of these)
-    public static int SellAncientRelicBasePrice { get; set; } = 750; // Boss 遗物非常珍贵，卖掉它应该能换回一个顶级商店遗物 (750 * 0.35 ≈ 262g)
-    public static int SellStarterRelicBasePrice { get; set; } = 300; // 初始遗物保持原价
-    public static int SellEventRelicBasePrice { get; set; } = 200;   // 事件遗物通常免费获取，调低回收价避免滥用
 
     public static bool EnableGiftMode { get; set; } = true;
 

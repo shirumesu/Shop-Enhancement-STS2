@@ -49,6 +49,7 @@ public partial class MainFile : Node
 
         ConfigManager.Load();
         ShopEnhancementBaseLibConfig.Register(ModId);
+        Patches.SellPriceRandomSeeds.RegisterSaves();
 
         Harmony harmony = new(ModId);
 

@@ -25,14 +25,20 @@ public class ConfigData
     public bool EnableUnlockAll { get; set; } = false;
 
     public bool EnableSellMode { get; set; } = true;
-    public float SellRelicPriceRatio { get; set; } = 0.35f;
-    public float SellPotionPriceRatio { get; set; } = 0.25f;
+    public int SellCommonRelicPrice { get; set; } = 70;
+    public int SellUncommonRelicPrice { get; set; } = 90;
+    public int SellRareRelicPrice { get; set; } = 110;
+    public int SellShopRelicPrice { get; set; } = 80;
+    public int SellAncientRelicPrice { get; set; } = 240;
+    public int SellStarterRelicPrice { get; set; } = 240;
+    public int SellEventRelicPrice { get; set; } = 80;
+    public float SellRelicPriceVariance { get; set; } = 0.2f;
     public int SellRelicMinGold { get; set; } = 30;
+    public int SellCommonPotionPrice { get; set; } = 20;
+    public int SellUncommonPotionPrice { get; set; } = 30;
+    public int SellRarePotionPrice { get; set; } = 40;
+    public float SellPotionPriceVariance { get; set; } = 0.2f;
     public int SellPotionMinGold { get; set; } = 15;
-
-    public int SellAncientRelicBasePrice { get; set; } = 750;
-    public int SellStarterRelicBasePrice { get; set; } = 300;
-    public int SellEventRelicBasePrice { get; set; } = 200;
 
     public bool EnableGiftMode { get; set; } = true;
     public bool EnableRemovalEnchantRandom { get; set; } = true;

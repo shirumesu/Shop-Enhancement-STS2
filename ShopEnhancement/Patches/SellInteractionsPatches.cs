@@ -158,24 +158,67 @@ public static partial class SellInteractionsPatches
 
     private static int CalculateRelicPrice(RelicModel relic)
     {
-        int basePrice = relic.MerchantCost;
-        if (relic.Rarity == RelicRarity.Ancient) basePrice = ShopEnhancementConfig.SellAncientRelicBasePrice;
-        else if (relic.Rarity == RelicRarity.Starter) basePrice = ShopEnhancementConfig.SellStarterRelicBasePrice;
-        else if (relic.Rarity == RelicRarity.Event) basePrice = ShopEnhancementConfig.SellEventRelicBasePrice;
+        int configuredPrice = relic.Rarity switch
+        {
+            RelicRarity.Common => ShopEnhancementConfig.SellCommonRelicPrice,
+            RelicRarity.Uncommon => ShopEnhancementConfig.SellUncommonRelicPrice,
+            RelicRarity.Rare => ShopEnhancementConfig.SellRareRelicPrice,
+            RelicRarity.Shop => ShopEnhancementConfig.SellShopRelicPrice,
+            RelicRarity.Ancient => ShopEnhancementConfig.SellAncientRelicPrice,
+            RelicRarity.Starter => ShopEnhancementConfig.SellStarterRelicPrice,
+            RelicRarity.Event => ShopEnhancementConfig.SellEventRelicPrice,
+            _ => ShopEnhancementConfig.SellCommonRelicPrice,
+        };
 
-        int value = (int)Math.Floor(basePrice * ShopEnhancementConfig.SellRelicPriceRatio);
-        return Math.Max(value, ShopEnhancementConfig.SellRelicMinGold);
+        float variance = ShopEnhancementConfig.SellRelicPriceVariance;
+        int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(relic) : null;
+        return ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellRelicMinGold, seed);
     }
 
     private static int CalculatePotionPrice(PotionModel potion)
     {
-        int baseCost = potion.Rarity switch
+        int configuredPrice = potion.Rarity switch
         {
-            PotionRarity.Rare => 100,
-            PotionRarity.Uncommon => 75,
-            _ => 50,
+            PotionRarity.Rare => ShopEnhancementConfig.SellRarePotionPrice,
+            PotionRarity.Uncommon => ShopEnhancementConfig.SellUncommonPotionPrice,
+            _ => ShopEnhancementConfig.SellCommonPotionPrice,
         };
-        int value = (int)Math.Floor(baseCost * ShopEnhancementConfig.SellPotionPriceRatio);
-        return Math.Max(value, ShopEnhancementConfig.SellPotionMinGold);
+
+        float variance = ShopEnhancementConfig.SellPotionPriceVariance;
+        int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(potion) : null;
+        return ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellPotionMinGold, seed);
+    }
+
+    private static int ApplyPriceVariance(int configuredPrice, float variance, int minGold, int? seed)
+    {
+        int price = Math.Max(0, configuredPrice);
+        float clampedVariance = Math.Clamp(variance, 0f, 1f);
+        if (clampedVariance > 0f && seed.HasValue)
+        {
+            int maxDelta = (int)Math.Round(price * clampedVariance, MidpointRounding.AwayFromZero);
+            if (maxDelta > 0)
+            {
+                price += SeedToRange(seed.Value, -maxDelta, maxDelta);
+            }
+        }
+
+        return Math.Max(price, Math.Max(0, minGold));
+    }
+
+    private static int SeedToRange(int seed, int minInclusive, int maxInclusive)
+    {
+        uint span = (uint)(maxInclusive - minInclusive + 1);
+        return minInclusive + (int)(HashSeed(seed) % span);
+    }
+
+    private static uint HashSeed(int seed)
+    {
+        uint hash = unchecked((uint)seed);
+        hash ^= hash >> 16;
+        hash *= 0x7feb352d;
+        hash ^= hash >> 15;
+        hash *= 0x846ca68b;
+        hash ^= hash >> 16;
+        return hash;
     }
 }
