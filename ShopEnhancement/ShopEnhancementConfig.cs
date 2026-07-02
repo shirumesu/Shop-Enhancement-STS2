@@ -27,9 +27,6 @@ public static class ShopEnhancementConfig
     public static bool EnableCrossClassCards { get; set; } = true;
     public static float CrossClassCardChance { get; set; } = 0.2f; // 20% chance per card. 100% (1f) is too chaotic. 20% adds spice without diluting class identity.
 
-    // Requirement 7: Unlock All Cards and Relics
-    public static bool EnableUnlockAll { get; set; } = false;
-
     public static bool EnableSellMode { get; set; } = true;
     public static int SellCommonRelicPrice { get; set; } = 70;
     public static int SellUncommonRelicPrice { get; set; } = 90;

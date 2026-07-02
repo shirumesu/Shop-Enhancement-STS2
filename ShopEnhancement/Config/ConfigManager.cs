@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Godot;
-using ShopEnhancement.Patches;
 
 namespace ShopEnhancement.Config;
 
@@ -74,13 +73,6 @@ public static class ConfigManager
         {
             ApplyConfig(data);
             WriteConfigFile(data);
-
-            if (SaveUnlockPatches.TryApplyUnlockAll())
-            {
-                data.EnableUnlockAll = false;
-                ApplyConfig(data);
-                WriteConfigFile(data);
-            }
         }
         catch (Exception ex)
         {
@@ -168,7 +160,6 @@ public static class ConfigManager
             SkipCardRewardGoldAmount = ShopEnhancementConfig.SkipCardRewardGoldAmount,
             EnableCrossClassCards = ShopEnhancementConfig.EnableCrossClassCards,
             CrossClassCardChance = ShopEnhancementConfig.CrossClassCardChance,
-            EnableUnlockAll = ShopEnhancementConfig.EnableUnlockAll,
             EnableSellMode = ShopEnhancementConfig.EnableSellMode,
             SellCommonRelicPrice = ShopEnhancementConfig.SellCommonRelicPrice,
             SellUncommonRelicPrice = ShopEnhancementConfig.SellUncommonRelicPrice,
@@ -212,7 +203,6 @@ public static class ConfigManager
         ShopEnhancementConfig.SkipCardRewardGoldAmount = data.SkipCardRewardGoldAmount;
         ShopEnhancementConfig.EnableCrossClassCards = data.EnableCrossClassCards;
         ShopEnhancementConfig.CrossClassCardChance = data.CrossClassCardChance;
-        ShopEnhancementConfig.EnableUnlockAll = data.EnableUnlockAll;
         ShopEnhancementConfig.EnableSellMode = data.EnableSellMode;
         ShopEnhancementConfig.SellCommonRelicPrice = Math.Max(0, data.SellCommonRelicPrice);
         ShopEnhancementConfig.SellUncommonRelicPrice = Math.Max(0, data.SellUncommonRelicPrice);

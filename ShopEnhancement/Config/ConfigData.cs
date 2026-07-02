@@ -21,8 +21,6 @@ public class ConfigData
     public bool EnableCrossClassCards { get; set; } = true;
     public float CrossClassCardChance { get; set; } = 0.2f;
 
-    public bool EnableUnlockAll { get; set; } = false;
-
     public bool EnableSellMode { get; set; } = true;
     public int SellCommonRelicPrice { get; set; } = 70;
     public int SellUncommonRelicPrice { get; set; } = 90;

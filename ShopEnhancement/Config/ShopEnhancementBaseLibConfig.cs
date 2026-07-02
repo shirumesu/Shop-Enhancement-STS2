@@ -43,15 +43,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float CrossClassCardChance { get; set; } = 0.2f;
 
-    [ConfigButton("UnlockAllRunNow")]
-    public static void RunUnlockAllOnce()
-    {
-        ConfigData data = ToConfigData();
-        data.EnableUnlockAll = true;
-        ConfigManager.Save(data);
-        CopyFromRuntimeConfig();
-    }
-
     [ConfigSection("SellMode")]
     [ConfigHoverTip]
     public static bool EnableSellMode { get; set; } = true;
@@ -246,7 +237,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             SkipCardRewardGoldAmount = SkipCardRewardGoldAmount,
             EnableCrossClassCards = EnableCrossClassCards,
             CrossClassCardChance = CrossClassCardChance,
-            EnableUnlockAll = false,
             EnableSellMode = EnableSellMode,
             SellCommonRelicPrice = SellCommonRelicPrice,
             SellUncommonRelicPrice = SellUncommonRelicPrice,

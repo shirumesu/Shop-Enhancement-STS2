@@ -20,8 +20,6 @@
   "SHOPENHANCEMENT-SKIP_CARD_REWARD_GOLD_AMOUNT.title": "Skip Card Reward Gold",
   "SHOPENHANCEMENT-ENABLE_CROSS_CLASS_CARDS.title": "Allow Other-Class Shop Cards",
   "SHOPENHANCEMENT-CROSS_CLASS_CARD_CHANCE.title": "Cross-Class Card Chance",
-  "SHOPENHANCEMENT-RUN_UNLOCK_ALL_ONCE.title": "Unlock All (Once)",
-  "SHOPENHANCEMENT-UNLOCK_ALL_RUN_NOW.title": "Run Now",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.title": "Enable Sell Mode",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.title": "Enable Sell Mode",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.desc": "Click the Sell Mode button in the bottom-left corner of the shop screen, then right-click a relic or potion to sell it. Note: the prices below are not the shop's buying prices, but the gold you earn when selling to the shop.",

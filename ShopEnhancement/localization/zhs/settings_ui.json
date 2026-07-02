@@ -20,8 +20,6 @@
   "SHOPENHANCEMENT-SKIP_CARD_REWARD_GOLD_AMOUNT.title": "跳过卡牌奖励金币",
   "SHOPENHANCEMENT-ENABLE_CROSS_CLASS_CARDS.title": "商店出现其他职业卡牌",
   "SHOPENHANCEMENT-CROSS_CLASS_CARD_CHANCE.title": "跨职业卡牌概率",
-  "SHOPENHANCEMENT-RUN_UNLOCK_ALL_ONCE.title": "执行一次全解锁",
-  "SHOPENHANCEMENT-UNLOCK_ALL_RUN_NOW.title": "立即执行",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.title": "启用出售模式",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.title": "启用出售模式",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.desc": "在商店页面左下角可以点击出售模式，随后右键遗物或药水出售，下列配置并非商店购买物品价格，而是出售给商店获得的收益价格。",
