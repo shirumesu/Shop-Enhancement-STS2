@@ -1,14 +1,12 @@
 {
   "id": "ShopEnhancement",
   "name": "ShopEnhancement",
-  "author": "DY",
+  "author": "DY, Maintained by shiying",
   "description": "Enhances shops with sell mode, refresh, card removal tweaks, and more strategic rewards.",
-  "version": "v0.4.0",
+  "version": "v0.4.1",
   "has_pck": true,
   "has_dll": true,
-  "dependencies": [
-    { "id": "BaseLib", "min_version": null }
-  ],
+  "dependencies": [{ "id": "BaseLib", "min_version": null }],
   "min_game_version": "0.107.1",
   "affects_gameplay": true
 }

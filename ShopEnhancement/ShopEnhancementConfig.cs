@@ -31,19 +31,19 @@ public static class ShopEnhancementConfig
     public static bool EnableUnlockAll { get; set; } = false;
 
     public static bool EnableSellMode { get; set; } = true;
-    public static int SellCommonRelicPrice { get; set; } = 61;
-    public static int SellUncommonRelicPrice { get; set; } = 78;
-    public static int SellRareRelicPrice { get; set; } = 96;
-    public static int SellShopRelicPrice { get; set; } = 70;
-    public static int SellAncientRelicPrice { get; set; } = 245;
-    public static int SellStarterRelicPrice { get; set; } = 245;
-    public static int SellEventRelicPrice { get; set; } = 70;
-    public static float SellRelicPriceVariance { get; set; } = 0.15f;
+    public static int SellCommonRelicPrice { get; set; } = 70;
+    public static int SellUncommonRelicPrice { get; set; } = 90;
+    public static int SellRareRelicPrice { get; set; } = 110;
+    public static int SellShopRelicPrice { get; set; } = 80;
+    public static int SellAncientRelicPrice { get; set; } = 240;
+    public static int SellStarterRelicPrice { get; set; } = 240;
+    public static int SellEventRelicPrice { get; set; } = 80;
+    public static float SellRelicPriceVariance { get; set; } = 0.2f;
     public static int SellRelicMinGold { get; set; } = 30;
-    public static int SellCommonPotionPrice { get; set; } = 17;
-    public static int SellUncommonPotionPrice { get; set; } = 26;
-    public static int SellRarePotionPrice { get; set; } = 35;
-    public static float SellPotionPriceVariance { get; set; } = 0.15f;
+    public static int SellCommonPotionPrice { get; set; } = 20;
+    public static int SellUncommonPotionPrice { get; set; } = 30;
+    public static int SellRarePotionPrice { get; set; } = 40;
+    public static float SellPotionPriceVariance { get; set; } = 0.2f;
     public static int SellPotionMinGold { get; set; } = 15;
 
     public static bool EnableGiftMode { get; set; } = true;
