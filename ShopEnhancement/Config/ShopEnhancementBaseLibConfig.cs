@@ -146,9 +146,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
     public static void Register(string modId)
     {
-        CopyFromRuntimeConfig();
+        ConfigData currentConfig = ConfigManager.GetCurrentConfig();
+        CopyFromConfigData(new ConfigData());
 
         ShopEnhancementBaseLibConfig config = new();
+        CopyFromConfigData(currentConfig);
         config.SyncToLegacyConfig();
         config.ConfigChanged += (_, _) => config.SyncToLegacyConfig();
         config.OnConfigReloaded += config.SyncToLegacyConfig;
@@ -177,8 +179,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
     private static void CopyFromRuntimeConfig()
     {
-        ConfigData data = ConfigManager.GetCurrentConfig();
+        CopyFromConfigData(ConfigManager.GetCurrentConfig());
+    }
 
+    private static void CopyFromConfigData(ConfigData data)
+    {
         RemoveBaseCost = data.RemoveBaseCost;
         RemoveStepCost = data.RemoveStepCost;
         RemoveLimitPerShop = data.RemoveLimitPerShop;
