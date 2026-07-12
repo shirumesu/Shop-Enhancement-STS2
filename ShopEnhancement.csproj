@@ -88,13 +88,13 @@
         <Copy SourceFiles="mod_manifest.json" DestinationFolder="$(ModOutputDir)\" />
     </Target>
 
-    <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
+    <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(GodotTargetPlatform)' == ''">
         <Message Text="Exporting Godot .pck to local mod output folder: $(ModOutputDir)" Importance="high" />
         <ItemGroup>
             <StaleGodotPackTempFiles Include="$(ModOutputDir)/$(AssemblyName).pck*.tmp" />
         </ItemGroup>
         <Delete Files="@(StaleGodotPackTempFiles)" />
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(ModOutputDir)/$(AssemblyName).pck&quot;" EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1" />
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(ModOutputDir)/$(AssemblyName).pck&quot;" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
     </Target>
 
     <Target Name="GodotPublishSkipped" AfterTargets="Publish" Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')">
