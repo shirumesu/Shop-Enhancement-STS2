@@ -101,6 +101,11 @@ public static class GiftPurchasePatches
         if (!string.IsNullOrEmpty(itemId))
         {
             var msg = new GiftItemMessage(itemId, itemType, player.NetId, targetId, upgradeCount, misc);
+            if (itemType is "Relic" or "Potion")
+            {
+                msg.SetMerchantPurchasePrice(cost);
+            }
+
             if (RunManager.Instance.NetService != null)
             {
                 RunManager.Instance.NetService.SendMessage(msg);

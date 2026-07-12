@@ -17,6 +17,7 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 using System.Text.Json;
 using ShopEnhancement.Config;
+using ShopEnhancement.Patches;
 
 namespace ShopEnhancement;
 
@@ -139,10 +140,10 @@ public static class ShopEnhancementNetwork
                 GiveCard(player, msg.ItemId, msg.UpgradeCount, msg.Misc);
                 break;
             case "Relic":
-                GiveRelic(player, msg.ItemId);
+                GiveRelic(player, msg.ItemId, GetMerchantPurchasePrice(msg));
                 break;
             case "Potion":
-                GivePotion(player, msg.ItemId);
+                GivePotion(player, msg.ItemId, GetMerchantPurchasePrice(msg));
                 break;
         }
 
@@ -256,23 +257,40 @@ public static class ShopEnhancementNetwork
         }
     }
 
-    private static void GiveRelic(Player player, string relicId)
+    private static int? GetMerchantPurchasePrice(GiftItemMessage msg)
+    {
+        return msg.TryGetMerchantPurchasePrice(out int price) ? price : null;
+    }
+
+    private static void GiveRelic(Player player, string relicId, int? merchantPurchasePrice)
     {
         var modelId = ModelId.Deserialize(relicId);
         var relicModel = ModelDb.AllRelics.FirstOrDefault(r => r.Id == modelId);
         if (relicModel != null)
         {
-            TaskHelper.RunSafely(RelicCmd.Obtain(relicModel.ToMutable(), player));
+            RelicModel relic = relicModel.ToMutable();
+            if (merchantPurchasePrice.HasValue)
+            {
+                MerchantPurchasePriceState.Set(relic, merchantPurchasePrice.Value);
+            }
+
+            TaskHelper.RunSafely(RelicCmd.Obtain(relic, player));
         }
     }
 
-    private static void GivePotion(Player player, string potionId)
+    private static void GivePotion(Player player, string potionId, int? merchantPurchasePrice)
     {
         var modelId = ModelId.Deserialize(potionId);
         var potionModel = ModelDb.AllPotions.FirstOrDefault(p => p.Id == modelId);
         if (potionModel != null)
         {
-            TaskHelper.RunSafely(PotionCmd.TryToProcure(potionModel.ToMutable(), player));
+            PotionModel potion = potionModel.ToMutable();
+            if (merchantPurchasePrice.HasValue)
+            {
+                MerchantPurchasePriceState.Set(potion, merchantPurchasePrice.Value);
+            }
+
+            TaskHelper.RunSafely(PotionCmd.TryToProcure(potion, player));
         }
     }
 }

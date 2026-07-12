@@ -2,7 +2,7 @@
 bin/
 obj/
 .godot/
-publish/
+public/
 /android/
 
 # IDE and local settings
@@ -19,3 +19,5 @@ Properties/
 
 # Gei spec system - internal agent state, not product source
 spec/
+# Local MSBuild overrides
+ShopEnhancement.local.props

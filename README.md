@@ -109,7 +109,7 @@ Execute in the project root directory:
 dotnet publish -c Release
 ```
 
-After a successful build, Mod files will be written to `publish/ShopEnhancement`:
+After a successful build, Mod files will be written to `public/ShopEnhancement`:
 - `ShopEnhancement.dll`
 - `ShopEnhancement.pck` (if resources exist)
 - `mod_manifest.json`
@@ -135,4 +135,4 @@ Download `BaseLib.dll` and `BaseLib.pck` from its releases and place them in the
 ## Notes
 
 - The mod injects logic via Harmony; compatibility depends on the game version.
-- If export fails or the game prompts that it is not loaded, first check whether `publish/ShopEnhancement` contains `ShopEnhancement.dll`, `ShopEnhancement.pck`, and `mod_manifest.json`, then copy that folder into the game `mods` directory for local testing.
+- If export fails or the game prompts that it is not loaded, first check whether `public/ShopEnhancement` contains `ShopEnhancement.dll`, `ShopEnhancement.pck`, and `mod_manifest.json`, then copy that folder into the game `mods` directory for local testing.

@@ -172,7 +172,8 @@ public static partial class SellInteractionsPatches
 
         float variance = ShopEnhancementConfig.SellRelicPriceVariance;
         int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(relic) : null;
-        return ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellRelicMinGold, seed);
+        int price = ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellRelicMinGold, seed);
+        return ApplyMerchantPurchasePriceCap(price, relic);
     }
 
     private static int CalculatePotionPrice(PotionModel potion)
@@ -186,7 +187,22 @@ public static partial class SellInteractionsPatches
 
         float variance = ShopEnhancementConfig.SellPotionPriceVariance;
         int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(potion) : null;
-        return ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellPotionMinGold, seed);
+        int price = ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellPotionMinGold, seed);
+        return ApplyMerchantPurchasePriceCap(price, potion);
+    }
+
+    private static int ApplyMerchantPurchasePriceCap(int price, RelicModel relic)
+    {
+        return MerchantPurchasePriceState.TryGet(relic, out int purchasePrice)
+            ? Math.Min(price, purchasePrice)
+            : price;
+    }
+
+    private static int ApplyMerchantPurchasePriceCap(int price, PotionModel potion)
+    {
+        return MerchantPurchasePriceState.TryGet(potion, out int purchasePrice)
+            ? Math.Min(price, purchasePrice)
+            : price;
     }
 
     private static int ApplyPriceVariance(int configuredPrice, float variance, int minGold, int? seed)

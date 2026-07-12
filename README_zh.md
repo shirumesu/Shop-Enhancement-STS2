@@ -107,7 +107,7 @@ Base By https://github.com/Alchyr/ModTemplate-StS2
 dotnet publish -c Release
 ```
 
-构建成功后，Mod 文件会输出到 `publish/ShopEnhancement`：
+构建成功后，Mod 文件会输出到 `public/ShopEnhancement`：
 - `ShopEnhancement.dll`
 - `ShopEnhancement.pck` (如果有资源)
 - `mod_manifest.json`
@@ -132,4 +132,4 @@ dotnet publish -c Release
 ## 备注
 
 - 模组通过 Harmony 注入逻辑，兼容性取决于游戏版本。
-- 若导出失败或游戏提示未加载，先检查 `publish/ShopEnhancement` 是否包含 `ShopEnhancement.dll`、`ShopEnhancement.pck` 与 `mod_manifest.json`，再将该目录复制到游戏 `mods` 目录进行本地测试。
+- 若导出失败或游戏提示未加载，先检查 `public/ShopEnhancement` 是否包含 `ShopEnhancement.dll`、`ShopEnhancement.pck` 与 `mod_manifest.json`，再将该目录复制到游戏 `mods` 目录进行本地测试。

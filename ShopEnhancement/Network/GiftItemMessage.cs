@@ -34,6 +34,29 @@ public class GiftItemMessage : INetMessage
         Misc = misc;
     }
 
+    public void SetMerchantPurchasePrice(int price)
+    {
+        if (ItemType is not ("Relic" or "Potion"))
+        {
+            return;
+        }
+
+        UpgradeCount = 1;
+        Misc = Math.Max(0, price);
+    }
+
+    public bool TryGetMerchantPurchasePrice(out int price)
+    {
+        if (ItemType is ("Relic" or "Potion") && UpgradeCount != 0)
+        {
+            price = Math.Max(0, Misc);
+            return true;
+        }
+
+        price = 0;
+        return false;
+    }
+
     public void Serialize(PacketWriter writer)
     {
         WriteString(writer, ItemId);
