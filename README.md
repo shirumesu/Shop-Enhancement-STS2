@@ -64,6 +64,7 @@ This mod includes the following core functional adjustments:
 ### 2. Shop Refresh Mechanism
 - **Refresh Goods**: Spend **40 Gold** to refresh all cards, relics, and potions in the shop.
 - **Limit**: Refresh is limited to **3 times** per shop to prevent excessive abuse.
+- **Relic Refresh Logic**: Defaults to **Rotation Queue**, which returns unbought relics to the pool and prefers relics not yet seen during the run. You can switch to **Vanilla Consume** (displaying a relic removes it from the pool) or **Fully Random** (unbought relics return and may repeat immediately).
 
 ### 3. Economic Compensation Mechanism
 - **No Shopping Bonus**: If you leave the shop without purchasing any items, you will receive **15 Gold** as travel expenses.

@@ -154,6 +154,7 @@ public static class ConfigManager
             RemoveLimitPerShop = ShopEnhancementConfig.RemoveLimitPerShop,
             RefreshCost = ShopEnhancementConfig.RefreshCost,
             RefreshLimitPerShop = ShopEnhancementConfig.RefreshLimitPerShop,
+            RelicRefreshMode = ShopEnhancementConfig.RelicRefreshMode,
             EnableNoPurchaseReward = ShopEnhancementConfig.EnableNoPurchaseReward,
             NoPurchaseRewardGold = ShopEnhancementConfig.NoPurchaseRewardGold,
             EnableSkipCardRewardGold = ShopEnhancementConfig.EnableSkipCardRewardGold,
@@ -197,6 +198,9 @@ public static class ConfigManager
         ShopEnhancementConfig.RemoveLimitPerShop = data.RemoveLimitPerShop;
         ShopEnhancementConfig.RefreshCost = data.RefreshCost;
         ShopEnhancementConfig.RefreshLimitPerShop = data.RefreshLimitPerShop;
+        ShopEnhancementConfig.RelicRefreshMode = Enum.IsDefined(data.RelicRefreshMode)
+            ? data.RelicRefreshMode
+            : ShopRelicRefreshMode.Queue;
         ShopEnhancementConfig.EnableNoPurchaseReward = data.EnableNoPurchaseReward;
         ShopEnhancementConfig.NoPurchaseRewardGold = data.NoPurchaseRewardGold;
         ShopEnhancementConfig.EnableSkipCardRewardGold = data.EnableSkipCardRewardGold;

@@ -115,6 +115,10 @@ public static class GiftPurchasePatches
 
         // Handle cleanup/restock
         bool shouldRestock = player.RunState.CurrentRoom is MegaCrit.Sts2.Core.Rooms.MerchantRoom && Hook.ShouldRefillMerchantEntry(player.RunState, entry, player);
+        if (entry is MerchantRelicEntry relicEntryToCommit)
+        {
+            ShopRelicRefreshState.CommitPurchase(relicEntryToCommit);
+        }
         
         if (shouldRestock)
         {

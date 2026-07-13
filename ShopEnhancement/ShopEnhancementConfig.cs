@@ -1,4 +1,5 @@
 using Godot;
+using ShopEnhancement.Config;
 
 namespace ShopEnhancement;
 
@@ -14,6 +15,7 @@ public static class ShopEnhancementConfig
     // Requirement 3: Refresh shop
     public static int RefreshCost { get; set; } = 40; // 10 was too cheap. 40 makes it a tactical decision.
     public static int RefreshLimitPerShop { get; set; } = 3; // Limit to 3 to prevent infinite digging/breaking the game loop.
+    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
 
     // Requirement 4: No Purchase Reward
     public static bool EnableNoPurchaseReward { get; set; } = true;

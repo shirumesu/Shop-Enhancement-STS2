@@ -288,42 +288,55 @@ public static class ShopRefreshPatches
         // 1. Unsubscribe from old entries
         UnsubscribeFromOldEntries(instance);
 
-        MerchantInventory newInventory = MerchantInventory.CreateForNormalMerchant(player);
-
-        // 2.1 Try to inject cross-class cards
-        TryReplaceWithCrossClassCards(newInventory, player);
-
-        ReplaceRoomInventory(player, newInventory);
-
-        // 3. Set Inventory field to null (to bypass Initialize check)
+        MerchantInventory oldInventory = instance.Inventory!;
+        ShopRelicRefreshState.RefreshTransaction? transaction = ShopRelicRefreshState.BeginRefresh(oldInventory);
         PropertyInfo inventoryProp = AccessTools.Property(typeof(NMerchantInventory), "Inventory");
-        // Inventory property has a private setter.
-        // We can set the backing field directly if we know the name, 
-        // or use the property setter via reflection.
-        inventoryProp.SetValue(instance, null);
-
-        // Fix for "Signal 'Hovered' is already connected" error
-        DisconnectSlots(instance);
-
-        // 4. Call Initialize
-        // We need the dialogue set. MerchantRoom.Dialogue is static.
         MerchantDialogueSet dialogue = MerchantRoom.Dialogue;
-        
-        instance.Initialize(newInventory, dialogue);
-
-        // 5. Update UI
-        // Initialize refills the slots.
-        
-        // Disable Gift Mode on refresh
-        if (GiftModeState.IsEnabled(newInventory))
+        try
         {
-            GiftModeState.Set(newInventory, false);
-        }
-        // Force update Gift Mode button UI
-        ShopGiftModeButtonPatches.ForceUpdateVisuals(instance);
+            MerchantInventory newInventory = MerchantInventory.CreateForNormalMerchant(player);
 
-        // 6. Optional: Play sound
-        // SfxCmd.Play("event:/sfx/npcs/merchant/merchant_welcome");
+            // 2.1 Try to inject cross-class cards
+            TryReplaceWithCrossClassCards(newInventory, player);
+
+            ReplaceRoomInventory(player, newInventory);
+
+            // 3. Set Inventory field to null (to bypass Initialize check)
+            inventoryProp.SetValue(instance, null);
+
+            // Fix for "Signal 'Hovered' is already connected" error
+            DisconnectSlots(instance);
+
+            // 4. Call Initialize
+            instance.Initialize(newInventory, dialogue);
+
+            // Disable Gift Mode on refresh
+            if (GiftModeState.IsEnabled(newInventory))
+            {
+                GiftModeState.Set(newInventory, false);
+            }
+            ShopGiftModeButtonPatches.ForceUpdateVisuals(instance);
+        }
+        catch
+        {
+            ShopRelicRefreshState.RollbackRefresh(transaction);
+            ReplaceRoomInventory(player, oldInventory);
+            if (instance.Inventory != oldInventory)
+            {
+                try
+                {
+                    inventoryProp.SetValue(instance, null);
+                    DisconnectSlots(instance);
+                    instance.Initialize(oldInventory, dialogue);
+                }
+                catch (Exception rollbackException)
+                {
+                    MainFile.Logger.Error($"Failed to restore the previous shop inventory after refresh error: {rollbackException}");
+                }
+            }
+
+            throw;
+        }
     }
 
     private static void ReplaceRoomInventory(Player player, MerchantInventory newInventory)

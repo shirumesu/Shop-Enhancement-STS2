@@ -26,6 +26,9 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 20, 1)]
     public static int RefreshLimitPerShop { get; set; } = 3;
 
+    [ConfigHoverTip]
+    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
+
     [ConfigSection("Rewards")]
     public static bool EnableNoPurchaseReward { get; set; } = true;
 
@@ -189,6 +192,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         RemoveLimitPerShop = data.RemoveLimitPerShop;
         RefreshCost = data.RefreshCost;
         RefreshLimitPerShop = data.RefreshLimitPerShop;
+        RelicRefreshMode = data.RelicRefreshMode;
         EnableNoPurchaseReward = data.EnableNoPurchaseReward;
         NoPurchaseRewardGold = data.NoPurchaseRewardGold;
         EnableSkipCardRewardGold = data.EnableSkipCardRewardGold;
@@ -236,6 +240,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             RemoveLimitPerShop = RemoveLimitPerShop,
             RefreshCost = RefreshCost,
             RefreshLimitPerShop = RefreshLimitPerShop,
+            RelicRefreshMode = RelicRefreshMode,
             EnableNoPurchaseReward = EnableNoPurchaseReward,
             NoPurchaseRewardGold = NoPurchaseRewardGold,
             EnableSkipCardRewardGold = EnableSkipCardRewardGold,

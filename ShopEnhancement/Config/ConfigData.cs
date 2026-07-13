@@ -11,6 +11,8 @@ public class ConfigData
 
     public int RefreshCost { get; set; } = 40;
     public int RefreshLimitPerShop { get; set; } = 3;
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
 
     public bool EnableNoPurchaseReward { get; set; } = true;
     public int NoPurchaseRewardGold { get; set; } = 15;
