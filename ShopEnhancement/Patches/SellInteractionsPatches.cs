@@ -62,6 +62,13 @@ public static partial class SellInteractionsPatches
         if (relic == null)
             return;
 
+        RelicSellEvaluation sellEvaluation = RelicSellRules.Evaluate(relic);
+        if (!sellEvaluation.CanSell)
+        {
+            await ShowRelicSellBlocked(sellEvaluation.Reasons);
+            return;
+        }
+
         int price = CalculateRelicPrice(relic);
         string relicName = relic.Title.GetFormattedText();
         
@@ -72,7 +79,9 @@ public static partial class SellInteractionsPatches
         if (!await ConfirmSell(msgLoc.GetFormattedText()))
             return;
 
+        SoldToyBoxState.PendingContinuation? toyBoxContinuation = SoldToyBoxState.Prepare(relic);
         await RelicCmd.Remove(relic);
+        SoldToyBoxState.Activate(toyBoxContinuation);
         await PlayerCmd.GainGold(price, relic.Owner);
         RunManager.Instance.RewardSynchronizer.SyncLocalObtainedGold(price);
         ShowSellResult(price);
@@ -145,6 +154,53 @@ public static partial class SellInteractionsPatches
         return await task;
     }
 
+    private static async Task ShowRelicSellBlocked(IReadOnlyList<RelicSellBlockReason> reasons)
+    {
+        if (NModalContainer.Instance == null || NModalContainer.Instance.OpenModal != null)
+            return;
+
+        var popup = NGenericPopup.Create();
+        if (popup == null)
+            return;
+
+        var reasonTexts = reasons
+            .Select(reason => new LocString("shop_enhancement", GetBlockedReasonKey(reason)).GetFormattedText())
+            .ToList();
+        var body = new LocString("shop_enhancement", "sell.blocked_body");
+        body.Add("0", string.Join("\n", reasonTexts));
+        var title = new LocString("shop_enhancement", "sell.blocked_title");
+        var acknowledge = new LocString("shop_enhancement", "sell.blocked_acknowledge");
+
+        NModalContainer.Instance.Add(popup);
+        Task<bool> task = popup.WaitForConfirmation(body, title, acknowledge, acknowledge);
+
+        var verticalPopupField = AccessTools.Field(typeof(NGenericPopup), "_verticalPopup");
+        if (verticalPopupField?.GetValue(popup) is NVerticalPopup verticalPopup)
+        {
+            verticalPopup.YesButton.Visible = false;
+        }
+
+        await task;
+    }
+
+    private static string GetBlockedReasonKey(RelicSellBlockReason reason)
+    {
+        return reason switch
+        {
+            RelicSellBlockReason.UsedUp => "sell.blocked_reason.used_up",
+            RelicSellBlockReason.UponPickup => "sell.blocked_reason.upon_pickup",
+            RelicSellBlockReason.Wax => "sell.blocked_reason.wax",
+            RelicSellBlockReason.Melted => "sell.blocked_reason.melted",
+            RelicSellBlockReason.Disabled => "sell.blocked_reason.disabled",
+            RelicSellBlockReason.Starter => "sell.blocked_reason.starter",
+            RelicSellBlockReason.Ancient => "sell.blocked_reason.ancient",
+            RelicSellBlockReason.Event => "sell.blocked_reason.event",
+            RelicSellBlockReason.StrictPet => "sell.blocked_reason.strict_pet",
+            RelicSellBlockReason.StrictUntradable => "sell.blocked_reason.strict_untradable",
+            _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null)
+        };
+    }
+
     private static void ShowSellResult(int price)
     {
         var loc = new LocString("shop_enhancement", "sell.success");
@@ -170,7 +226,9 @@ public static partial class SellInteractionsPatches
             _ => ShopEnhancementConfig.SellCommonRelicPrice,
         };
 
-        float variance = ShopEnhancementConfig.SellRelicPriceVariance;
+        float variance = ShopEnhancementConfig.EnableSellPriceVariance
+            ? ShopEnhancementConfig.SellPriceVariance
+            : 0f;
         int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(relic) : null;
         int price = ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellRelicMinGold, seed);
         return ApplyMerchantPurchasePriceCap(price, relic);
@@ -185,7 +243,9 @@ public static partial class SellInteractionsPatches
             _ => ShopEnhancementConfig.SellCommonPotionPrice,
         };
 
-        float variance = ShopEnhancementConfig.SellPotionPriceVariance;
+        float variance = ShopEnhancementConfig.EnableSellPriceVariance
+            ? ShopEnhancementConfig.SellPriceVariance
+            : 0f;
         int? seed = Math.Clamp(variance, 0f, 1f) > 0f ? SellPriceRandomSeeds.GetOrCreateSeed(potion) : null;
         int price = ApplyPriceVariance(configuredPrice, variance, ShopEnhancementConfig.SellPotionMinGold, seed);
         return ApplyMerchantPurchasePriceCap(price, potion);

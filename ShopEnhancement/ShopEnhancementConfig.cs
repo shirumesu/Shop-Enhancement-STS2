@@ -30,6 +30,19 @@ public static class ShopEnhancementConfig
     public static float CrossClassCardChance { get; set; } = 0.2f; // 20% chance per card. 100% (1f) is too chaotic. 20% adds spice without diluting class identity.
 
     public static bool EnableSellMode { get; set; } = true;
+    public static bool EnableSellPriceVariance { get; set; } = true;
+    public static float SellPriceVariance { get; set; } = 0.2f;
+    public static bool EnableGiftMode { get; set; } = true;
+
+    public static RelicSellPreset RelicSellRulePreset { get; set; } = RelicSellPreset.AllowAll;
+    public static bool AllowUsedUpRelics { get; set; } = true;
+    public static bool AllowUponPickupRelics { get; set; } = true;
+    public static bool AllowWaxRelics { get; set; } = true;
+    public static bool AllowMeltedRelics { get; set; } = true;
+    public static bool AllowDisabledRelics { get; set; } = true;
+    public static bool AllowStarterRelics { get; set; } = true;
+    public static bool AllowAncientRelics { get; set; } = true;
+    public static bool AllowEventRelics { get; set; } = true;
     public static int SellCommonRelicPrice { get; set; } = 70;
     public static int SellUncommonRelicPrice { get; set; } = 90;
     public static int SellRareRelicPrice { get; set; } = 110;
@@ -37,15 +50,11 @@ public static class ShopEnhancementConfig
     public static int SellAncientRelicPrice { get; set; } = 240;
     public static int SellStarterRelicPrice { get; set; } = 240;
     public static int SellEventRelicPrice { get; set; } = 80;
-    public static float SellRelicPriceVariance { get; set; } = 0.2f;
     public static int SellRelicMinGold { get; set; } = 30;
     public static int SellCommonPotionPrice { get; set; } = 20;
     public static int SellUncommonPotionPrice { get; set; } = 30;
     public static int SellRarePotionPrice { get; set; } = 40;
-    public static float SellPotionPriceVariance { get; set; } = 0.2f;
     public static int SellPotionMinGold { get; set; } = 15;
-
-    public static bool EnableGiftMode { get; set; } = true;
 
     public static bool EnableRemovalEnchantRandom { get; set; } = true;
     public static bool EnableEnchantService { get; set; } = true;

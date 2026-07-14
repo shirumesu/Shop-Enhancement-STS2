@@ -24,6 +24,20 @@ public class ConfigData
     public float CrossClassCardChance { get; set; } = 0.2f;
 
     public bool EnableSellMode { get; set; } = true;
+    public bool EnableSellPriceVariance { get; set; } = true;
+    public float SellPriceVariance { get; set; } = 0.2f;
+    public bool EnableGiftMode { get; set; } = true;
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public RelicSellPreset RelicSellRulePreset { get; set; } = RelicSellPreset.AllowAll;
+    public bool AllowUsedUpRelics { get; set; } = true;
+    public bool AllowUponPickupRelics { get; set; } = true;
+    public bool AllowWaxRelics { get; set; } = true;
+    public bool AllowMeltedRelics { get; set; } = true;
+    public bool AllowDisabledRelics { get; set; } = true;
+    public bool AllowStarterRelics { get; set; } = true;
+    public bool AllowAncientRelics { get; set; } = true;
+    public bool AllowEventRelics { get; set; } = true;
     public int SellCommonRelicPrice { get; set; } = 70;
     public int SellUncommonRelicPrice { get; set; } = 90;
     public int SellRareRelicPrice { get; set; } = 110;
@@ -31,15 +45,12 @@ public class ConfigData
     public int SellAncientRelicPrice { get; set; } = 240;
     public int SellStarterRelicPrice { get; set; } = 240;
     public int SellEventRelicPrice { get; set; } = 80;
-    public float SellRelicPriceVariance { get; set; } = 0.2f;
     public int SellRelicMinGold { get; set; } = 30;
     public int SellCommonPotionPrice { get; set; } = 20;
     public int SellUncommonPotionPrice { get; set; } = 30;
     public int SellRarePotionPrice { get; set; } = 40;
-    public float SellPotionPriceVariance { get; set; } = 0.2f;
     public int SellPotionMinGold { get; set; } = 15;
 
-    public bool EnableGiftMode { get; set; } = true;
     public bool EnableRemovalEnchantRandom { get; set; } = true;
     public bool EnableEnchantService { get; set; } = true;
     public int EnchantStartShopVisit { get; set; } = 4;

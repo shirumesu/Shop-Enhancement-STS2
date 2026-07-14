@@ -52,6 +52,7 @@ public partial class MainFile : Node
         Patches.SellPriceRandomSeeds.RegisterSaves();
         Patches.MerchantPurchasePriceState.RegisterSaves();
         Patches.ShopRelicRefreshState.RegisterSaves();
+        Patches.SoldToyBoxState.RegisterSaves();
 
         Harmony harmony = new(ModId);
 

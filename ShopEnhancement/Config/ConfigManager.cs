@@ -13,6 +13,7 @@ public static class ConfigManager
     private const string ConfigFileName = "config.json";
     private const float LegacyRelicPriceRatioDefault = 0.35f;
     private const float LegacyPotionPriceRatioDefault = 0.25f;
+    private const float DefaultSellPriceVariance = 0.2f;
     private const int LegacyCommonRelicBasePrice = 175;
     private const int LegacyUncommonRelicBasePrice = 225;
     private const int LegacyRareRelicBasePrice = 275;
@@ -162,6 +163,18 @@ public static class ConfigManager
             EnableCrossClassCards = ShopEnhancementConfig.EnableCrossClassCards,
             CrossClassCardChance = ShopEnhancementConfig.CrossClassCardChance,
             EnableSellMode = ShopEnhancementConfig.EnableSellMode,
+            EnableSellPriceVariance = ShopEnhancementConfig.EnableSellPriceVariance,
+            SellPriceVariance = ShopEnhancementConfig.SellPriceVariance,
+            EnableGiftMode = ShopEnhancementConfig.EnableGiftMode,
+            RelicSellRulePreset = ShopEnhancementConfig.RelicSellRulePreset,
+            AllowUsedUpRelics = ShopEnhancementConfig.AllowUsedUpRelics,
+            AllowUponPickupRelics = ShopEnhancementConfig.AllowUponPickupRelics,
+            AllowWaxRelics = ShopEnhancementConfig.AllowWaxRelics,
+            AllowMeltedRelics = ShopEnhancementConfig.AllowMeltedRelics,
+            AllowDisabledRelics = ShopEnhancementConfig.AllowDisabledRelics,
+            AllowStarterRelics = ShopEnhancementConfig.AllowStarterRelics,
+            AllowAncientRelics = ShopEnhancementConfig.AllowAncientRelics,
+            AllowEventRelics = ShopEnhancementConfig.AllowEventRelics,
             SellCommonRelicPrice = ShopEnhancementConfig.SellCommonRelicPrice,
             SellUncommonRelicPrice = ShopEnhancementConfig.SellUncommonRelicPrice,
             SellRareRelicPrice = ShopEnhancementConfig.SellRareRelicPrice,
@@ -169,14 +182,11 @@ public static class ConfigManager
             SellAncientRelicPrice = ShopEnhancementConfig.SellAncientRelicPrice,
             SellStarterRelicPrice = ShopEnhancementConfig.SellStarterRelicPrice,
             SellEventRelicPrice = ShopEnhancementConfig.SellEventRelicPrice,
-            SellRelicPriceVariance = ShopEnhancementConfig.SellRelicPriceVariance,
             SellRelicMinGold = ShopEnhancementConfig.SellRelicMinGold,
             SellCommonPotionPrice = ShopEnhancementConfig.SellCommonPotionPrice,
             SellUncommonPotionPrice = ShopEnhancementConfig.SellUncommonPotionPrice,
             SellRarePotionPrice = ShopEnhancementConfig.SellRarePotionPrice,
-            SellPotionPriceVariance = ShopEnhancementConfig.SellPotionPriceVariance,
             SellPotionMinGold = ShopEnhancementConfig.SellPotionMinGold,
-            EnableGiftMode = ShopEnhancementConfig.EnableGiftMode,
             EnableRemovalEnchantRandom = ShopEnhancementConfig.EnableRemovalEnchantRandom,
             EnableEnchantService = ShopEnhancementConfig.EnableEnchantService,
             EnchantStartShopVisit = ShopEnhancementConfig.EnchantStartShopVisit,
@@ -195,7 +205,7 @@ public static class ConfigManager
     {
         ShopEnhancementConfig.RemoveBaseCost = data.RemoveBaseCost;
         ShopEnhancementConfig.RemoveStepCost = data.RemoveStepCost;
-        ShopEnhancementConfig.RemoveLimitPerShop = data.RemoveLimitPerShop;
+        ShopEnhancementConfig.RemoveLimitPerShop = Math.Max(1, data.RemoveLimitPerShop);
         ShopEnhancementConfig.RefreshCost = data.RefreshCost;
         ShopEnhancementConfig.RefreshLimitPerShop = data.RefreshLimitPerShop;
         ShopEnhancementConfig.RelicRefreshMode = Enum.IsDefined(data.RelicRefreshMode)
@@ -208,6 +218,20 @@ public static class ConfigManager
         ShopEnhancementConfig.EnableCrossClassCards = data.EnableCrossClassCards;
         ShopEnhancementConfig.CrossClassCardChance = data.CrossClassCardChance;
         ShopEnhancementConfig.EnableSellMode = data.EnableSellMode;
+        ShopEnhancementConfig.EnableSellPriceVariance = data.EnableSellPriceVariance;
+        ShopEnhancementConfig.SellPriceVariance = Math.Clamp(data.SellPriceVariance, 0f, 1f);
+        ShopEnhancementConfig.EnableGiftMode = data.EnableGiftMode;
+        ShopEnhancementConfig.RelicSellRulePreset = Enum.IsDefined(data.RelicSellRulePreset)
+            ? data.RelicSellRulePreset
+            : RelicSellPreset.AllowAll;
+        ShopEnhancementConfig.AllowUsedUpRelics = data.AllowUsedUpRelics;
+        ShopEnhancementConfig.AllowUponPickupRelics = data.AllowUponPickupRelics;
+        ShopEnhancementConfig.AllowWaxRelics = data.AllowWaxRelics;
+        ShopEnhancementConfig.AllowMeltedRelics = data.AllowMeltedRelics;
+        ShopEnhancementConfig.AllowDisabledRelics = data.AllowDisabledRelics;
+        ShopEnhancementConfig.AllowStarterRelics = data.AllowStarterRelics;
+        ShopEnhancementConfig.AllowAncientRelics = data.AllowAncientRelics;
+        ShopEnhancementConfig.AllowEventRelics = data.AllowEventRelics;
         ShopEnhancementConfig.SellCommonRelicPrice = Math.Max(0, data.SellCommonRelicPrice);
         ShopEnhancementConfig.SellUncommonRelicPrice = Math.Max(0, data.SellUncommonRelicPrice);
         ShopEnhancementConfig.SellRareRelicPrice = Math.Max(0, data.SellRareRelicPrice);
@@ -215,14 +239,11 @@ public static class ConfigManager
         ShopEnhancementConfig.SellAncientRelicPrice = Math.Max(0, data.SellAncientRelicPrice);
         ShopEnhancementConfig.SellStarterRelicPrice = Math.Max(0, data.SellStarterRelicPrice);
         ShopEnhancementConfig.SellEventRelicPrice = Math.Max(0, data.SellEventRelicPrice);
-        ShopEnhancementConfig.SellRelicPriceVariance = Math.Clamp(data.SellRelicPriceVariance, 0f, 1f);
         ShopEnhancementConfig.SellRelicMinGold = Math.Max(0, data.SellRelicMinGold);
         ShopEnhancementConfig.SellCommonPotionPrice = Math.Max(0, data.SellCommonPotionPrice);
         ShopEnhancementConfig.SellUncommonPotionPrice = Math.Max(0, data.SellUncommonPotionPrice);
         ShopEnhancementConfig.SellRarePotionPrice = Math.Max(0, data.SellRarePotionPrice);
-        ShopEnhancementConfig.SellPotionPriceVariance = Math.Clamp(data.SellPotionPriceVariance, 0f, 1f);
         ShopEnhancementConfig.SellPotionMinGold = Math.Max(0, data.SellPotionMinGold);
-        ShopEnhancementConfig.EnableGiftMode = data.EnableGiftMode;
         ShopEnhancementConfig.EnableRemovalEnchantRandom = data.EnableRemovalEnchantRandom;
         ShopEnhancementConfig.EnableEnchantService = data.EnableEnchantService;
         ShopEnhancementConfig.EnchantStartShopVisit = data.EnchantStartShopVisit;
@@ -246,7 +267,10 @@ public static class ConfigManager
         }
 
         using JsonDocument document = JsonDocument.Parse(json);
-        migrated = TryMigrateLegacySellConfig(data, document.RootElement);
+        bool migratedLegacySellConfig = TryMigrateLegacySellConfig(data, document.RootElement);
+        bool migratedSellPriceVariance = !migratedLegacySellConfig
+            && TryMigrateLegacySellPriceVariance(data, document.RootElement);
+        migrated = migratedLegacySellConfig || migratedSellPriceVariance;
         return data;
     }
 
@@ -270,13 +294,36 @@ public static class ConfigManager
         data.SellAncientRelicPrice = LegacySellPrice(ancientBasePrice, relicRatio, data.SellRelicMinGold);
         data.SellStarterRelicPrice = LegacySellPrice(starterBasePrice, relicRatio, data.SellRelicMinGold);
         data.SellEventRelicPrice = LegacySellPrice(eventBasePrice, relicRatio, data.SellRelicMinGold);
-        data.SellRelicPriceVariance = 0f;
 
         data.SellCommonPotionPrice = LegacySellPrice(LegacyCommonPotionBasePrice, potionRatio, data.SellPotionMinGold);
         data.SellUncommonPotionPrice = LegacySellPrice(LegacyUncommonPotionBasePrice, potionRatio, data.SellPotionMinGold);
         data.SellRarePotionPrice = LegacySellPrice(LegacyRarePotionBasePrice, potionRatio, data.SellPotionMinGold);
-        data.SellPotionPriceVariance = 0f;
+        data.EnableSellPriceVariance = false;
+        data.SellPriceVariance = DefaultSellPriceVariance;
 
+        return true;
+    }
+
+    private static bool TryMigrateLegacySellPriceVariance(ConfigData data, JsonElement root)
+    {
+        if (root.TryGetProperty(nameof(ConfigData.EnableSellPriceVariance), out _)
+            || root.TryGetProperty(nameof(ConfigData.SellPriceVariance), out _))
+        {
+            return false;
+        }
+
+        bool hasRelicVariance = root.TryGetProperty("SellRelicPriceVariance", out _);
+        bool hasPotionVariance = root.TryGetProperty("SellPotionPriceVariance", out _);
+        if (!hasRelicVariance && !hasPotionVariance)
+        {
+            return false;
+        }
+
+        float relicVariance = hasRelicVariance ? GetFloat(root, "SellRelicPriceVariance", 0f) : 0f;
+        float potionVariance = hasPotionVariance ? GetFloat(root, "SellPotionPriceVariance", 0f) : 0f;
+        float variance = Math.Clamp(Math.Max(relicVariance, potionVariance), 0f, 1f);
+        data.EnableSellPriceVariance = variance > 0f;
+        data.SellPriceVariance = variance > 0f ? variance : DefaultSellPriceVariance;
         return true;
     }
 

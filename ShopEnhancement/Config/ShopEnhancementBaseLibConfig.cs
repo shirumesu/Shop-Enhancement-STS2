@@ -1,4 +1,5 @@
 using BaseLib.Config;
+using BaseLib.Config.UI;
 using Godot;
 
 namespace ShopEnhancement.Config;
@@ -7,19 +8,9 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 {
     private const string FractionSliderFormat = "{0:0.##}";
     private static bool _syncing;
+    private static RelicSellRuleSnapshot _lastRelicSellRuleSnapshot;
 
-    [ConfigSection("CardRemoval")]
-    [ConfigSlider(0, 200, 1)]
-    [ConfigHoverTip]
-    public static int RemoveBaseCost { get; set; } = 50;
-
-    [ConfigSlider(0, 100, 1)]
-    public static int RemoveStepCost { get; set; } = 25;
-
-    [ConfigSlider(0, 20, 1)]
-    public static int RemoveLimitPerShop { get; set; } = 3;
-
-    [ConfigSection("ShopRefresh")]
+    [ConfigSection("BasicShop")]
     [ConfigSlider(0, 99, 1)]
     public static int RefreshCost { get; set; } = 40;
 
@@ -29,7 +20,17 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigHoverTip]
     public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
 
-    [ConfigSection("Rewards")]
+    [ConfigSlider(0, 200, 1)]
+    [ConfigHoverTip]
+    public static int RemoveBaseCost { get; set; } = 50;
+
+    [ConfigSlider(0, 100, 1)]
+    public static int RemoveStepCost { get; set; } = 25;
+
+    [ConfigSlider(1, 20, 1)]
+    public static int RemoveLimitPerShop { get; set; } = 3;
+
+    [ConfigSection("ExtraFeatures")]
     public static bool EnableNoPurchaseReward { get; set; } = true;
 
     [ConfigSlider(0, 999, 1)]
@@ -40,16 +41,51 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 999, 1)]
     public static int SkipCardRewardGoldAmount { get; set; } = 15;
 
-    [ConfigSection("Cards")]
     public static bool EnableCrossClassCards { get; set; } = true;
 
     [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
     public static float CrossClassCardChance { get; set; } = 0.2f;
 
-    [ConfigSection("SellMode")]
     [ConfigHoverTip]
     public static bool EnableSellMode { get; set; } = true;
 
+    public static bool EnableSellPriceVariance { get; set; } = true;
+
+    [ConfigHoverTip]
+    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
+    public static float SellPriceVariance { get; set; } = 0.2f;
+
+    public static bool EnableGiftMode { get; set; } = true;
+
+    [ConfigSection("SellRules")]
+    [ConfigHoverTip]
+    public static RelicSellPreset RelicSellRulePreset { get; set; } = RelicSellPreset.AllowAll;
+
+    [ConfigHoverTip]
+    public static bool AllowStarterRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowAncientRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowEventRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowWaxRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowMeltedRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowUsedUpRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowUponPickupRelics { get; set; } = true;
+
+    [ConfigHoverTip]
+    public static bool AllowDisabledRelics { get; set; } = true;
+
+    [ConfigSection("SellPrices")]
     [ConfigHoverTip]
     [ConfigSlider(0, 999, 1)]
     public static int SellCommonRelicPrice { get; set; } = 70;
@@ -78,10 +114,6 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 999, 1)]
     public static int SellEventRelicPrice { get; set; } = 80;
 
-    [ConfigHoverTip]
-    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
-    public static float SellRelicPriceVariance { get; set; } = 0.2f;
-
     [ConfigSlider(0, 999, 1)]
     public static int SellRelicMinGold { get; set; } = 30;
 
@@ -97,15 +129,8 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 999, 1)]
     public static int SellRarePotionPrice { get; set; } = 40;
 
-    [ConfigHoverTip]
-    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
-    public static float SellPotionPriceVariance { get; set; } = 0.2f;
-
     [ConfigSlider(0, 999, 1)]
     public static int SellPotionMinGold { get; set; } = 15;
-
-    [ConfigSection("Other")]
-    public static bool EnableGiftMode { get; set; } = true;
 
     [ConfigSection("Enchant")]
     public static bool EnableRemovalEnchantRandom { get; set; } = true;
@@ -147,6 +172,19 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigSlider(0, 999, 1)]
     public static int GiftServiceStepCost { get; set; } = 55;
 
+    public override void SetupConfigUI(Control optionContainer)
+    {
+        base.SetupConfigUI(optionContainer);
+
+        foreach (Node child in optionContainer.GetChildren())
+        {
+            if (child is NConfigCollapsibleSection section)
+            {
+                section.IsExpanded = section.Name.ToString() == "CollapsibleSection_BasicShop";
+            }
+        }
+    }
+
     public static void Register(string modId)
     {
         ConfigData currentConfig = ConfigManager.GetCurrentConfig();
@@ -154,14 +192,63 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
 
         ShopEnhancementBaseLibConfig config = new();
         CopyFromConfigData(currentConfig);
+        NormalizeRelicSellRuleSettings();
         config.SyncToLegacyConfig();
-        config.ConfigChanged += (_, _) => config.SyncToLegacyConfig();
-        config.OnConfigReloaded += config.SyncToLegacyConfig;
+        config.ConfigChanged += (_, _) => config.HandleConfigChanged();
+        config.OnConfigReloaded += config.HandleConfigReloaded;
 
         ModConfigRegistry.Register(modId, config);
     }
 
-    private void SyncToLegacyConfig()
+    private void HandleConfigChanged()
+    {
+        if (_syncing)
+        {
+            return;
+        }
+
+        RelicSellRuleSnapshot current = CaptureRelicSellRuleSnapshot();
+        bool presetChanged = current.Preset != _lastRelicSellRuleSnapshot.Preset;
+        bool optionsChanged = current.Options != _lastRelicSellRuleSnapshot.Options;
+
+        if (presetChanged)
+        {
+            if (RelicSellRulePreset != RelicSellPreset.Custom)
+            {
+                ApplyRelicSellRulePreset(RelicSellRulePreset);
+            }
+        }
+        else if (optionsChanged)
+        {
+            bool waxChanged = current.Options.AllowWaxRelics != _lastRelicSellRuleSnapshot.Options.AllowWaxRelics;
+            bool meltedChanged = current.Options.AllowMeltedRelics != _lastRelicSellRuleSnapshot.Options.AllowMeltedRelics;
+
+            RelicSellRulePreset = RelicSellPreset.Custom;
+            if (meltedChanged && AllowMeltedRelics && !AllowWaxRelics)
+            {
+                AllowWaxRelics = true;
+            }
+            else if (waxChanged && !AllowWaxRelics && AllowMeltedRelics)
+            {
+                AllowMeltedRelics = false;
+            }
+        }
+
+        SyncToLegacyConfig(refreshUi: presetChanged || optionsChanged);
+    }
+
+    private void HandleConfigReloaded()
+    {
+        if (_syncing)
+        {
+            return;
+        }
+
+        NormalizeRelicSellRuleSettings();
+        SyncToLegacyConfig();
+    }
+
+    private void SyncToLegacyConfig(bool refreshUi = false)
     {
         if (_syncing)
         {
@@ -173,6 +260,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             _syncing = true;
             ConfigManager.Save(ToConfigData());
             CopyFromRuntimeConfig();
+            _lastRelicSellRuleSnapshot = CaptureRelicSellRuleSnapshot();
+            if (refreshUi)
+            {
+                ConfigReloaded();
+            }
         }
         finally
         {
@@ -200,6 +292,18 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         EnableCrossClassCards = data.EnableCrossClassCards;
         CrossClassCardChance = data.CrossClassCardChance;
         EnableSellMode = data.EnableSellMode;
+        EnableSellPriceVariance = data.EnableSellPriceVariance;
+        SellPriceVariance = data.SellPriceVariance;
+        EnableGiftMode = data.EnableGiftMode;
+        RelicSellRulePreset = data.RelicSellRulePreset;
+        AllowUsedUpRelics = data.AllowUsedUpRelics;
+        AllowUponPickupRelics = data.AllowUponPickupRelics;
+        AllowWaxRelics = data.AllowWaxRelics;
+        AllowMeltedRelics = data.AllowMeltedRelics;
+        AllowDisabledRelics = data.AllowDisabledRelics;
+        AllowStarterRelics = data.AllowStarterRelics;
+        AllowAncientRelics = data.AllowAncientRelics;
+        AllowEventRelics = data.AllowEventRelics;
         SellCommonRelicPrice = data.SellCommonRelicPrice;
         SellUncommonRelicPrice = data.SellUncommonRelicPrice;
         SellRareRelicPrice = data.SellRareRelicPrice;
@@ -207,14 +311,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         SellAncientRelicPrice = data.SellAncientRelicPrice;
         SellStarterRelicPrice = data.SellStarterRelicPrice;
         SellEventRelicPrice = data.SellEventRelicPrice;
-        SellRelicPriceVariance = data.SellRelicPriceVariance;
         SellRelicMinGold = data.SellRelicMinGold;
         SellCommonPotionPrice = data.SellCommonPotionPrice;
         SellUncommonPotionPrice = data.SellUncommonPotionPrice;
         SellRarePotionPrice = data.SellRarePotionPrice;
-        SellPotionPriceVariance = data.SellPotionPriceVariance;
         SellPotionMinGold = data.SellPotionMinGold;
-        EnableGiftMode = data.EnableGiftMode;
         EnableRemovalEnchantRandom = data.EnableRemovalEnchantRandom;
         EnableEnchantService = data.EnableEnchantService;
         EnchantStartShopVisit = data.EnchantStartShopVisit;
@@ -248,6 +349,18 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             EnableCrossClassCards = EnableCrossClassCards,
             CrossClassCardChance = CrossClassCardChance,
             EnableSellMode = EnableSellMode,
+            EnableSellPriceVariance = EnableSellPriceVariance,
+            SellPriceVariance = SellPriceVariance,
+            EnableGiftMode = EnableGiftMode,
+            RelicSellRulePreset = RelicSellRulePreset,
+            AllowUsedUpRelics = AllowUsedUpRelics,
+            AllowUponPickupRelics = AllowUponPickupRelics,
+            AllowWaxRelics = AllowWaxRelics,
+            AllowMeltedRelics = AllowMeltedRelics,
+            AllowDisabledRelics = AllowDisabledRelics,
+            AllowStarterRelics = AllowStarterRelics,
+            AllowAncientRelics = AllowAncientRelics,
+            AllowEventRelics = AllowEventRelics,
             SellCommonRelicPrice = SellCommonRelicPrice,
             SellUncommonRelicPrice = SellUncommonRelicPrice,
             SellRareRelicPrice = SellRareRelicPrice,
@@ -255,14 +368,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             SellAncientRelicPrice = SellAncientRelicPrice,
             SellStarterRelicPrice = SellStarterRelicPrice,
             SellEventRelicPrice = SellEventRelicPrice,
-            SellRelicPriceVariance = SellRelicPriceVariance,
             SellRelicMinGold = SellRelicMinGold,
             SellCommonPotionPrice = SellCommonPotionPrice,
             SellUncommonPotionPrice = SellUncommonPotionPrice,
             SellRarePotionPrice = SellRarePotionPrice,
-            SellPotionPriceVariance = SellPotionPriceVariance,
             SellPotionMinGold = SellPotionMinGold,
-            EnableGiftMode = EnableGiftMode,
             EnableRemovalEnchantRandom = EnableRemovalEnchantRandom,
             EnableEnchantService = EnableEnchantService,
             EnchantStartShopVisit = EnchantStartShopVisit,
@@ -281,4 +391,53 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     {
         return new Vector2I(Math.Min(first, second), Math.Max(first, second));
     }
+
+    private static void NormalizeRelicSellRuleSettings()
+    {
+        if (!Enum.IsDefined(RelicSellRulePreset))
+        {
+            RelicSellRulePreset = RelicSellPreset.AllowAll;
+        }
+
+        if (RelicSellRulePreset != RelicSellPreset.Custom)
+        {
+            ApplyRelicSellRulePreset(RelicSellRulePreset);
+        }
+        else if (AllowMeltedRelics && !AllowWaxRelics)
+        {
+            AllowWaxRelics = true;
+        }
+    }
+
+    private static void ApplyRelicSellRulePreset(RelicSellPreset preset)
+    {
+        RelicSellRuleOptions options = RelicSellRuleOptions.ForPreset(preset);
+        AllowUsedUpRelics = options.AllowUsedUpRelics;
+        AllowUponPickupRelics = options.AllowUponPickupRelics;
+        AllowWaxRelics = options.AllowWaxRelics;
+        AllowMeltedRelics = options.AllowMeltedRelics;
+        AllowDisabledRelics = options.AllowDisabledRelics;
+        AllowStarterRelics = options.AllowStarterRelics;
+        AllowAncientRelics = options.AllowAncientRelics;
+        AllowEventRelics = options.AllowEventRelics;
+    }
+
+    private static RelicSellRuleSnapshot CaptureRelicSellRuleSnapshot()
+    {
+        return new RelicSellRuleSnapshot(
+            RelicSellRulePreset,
+            new RelicSellRuleOptions(
+                AllowUsedUpRelics,
+                AllowUponPickupRelics,
+                AllowWaxRelics,
+                AllowMeltedRelics,
+                AllowDisabledRelics,
+                AllowStarterRelics,
+                AllowAncientRelics,
+                AllowEventRelics));
+    }
+
+    private readonly record struct RelicSellRuleSnapshot(
+        RelicSellPreset Preset,
+        RelicSellRuleOptions Options);
 }
