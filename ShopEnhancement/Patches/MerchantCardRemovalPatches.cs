@@ -81,7 +81,10 @@ public static class MerchantCardRemovalPatches
             }
         }
 
-        ____cost = ShopEnhancementConfig.RemoveBaseCost + (ShopEnhancementConfig.RemoveStepCost * ____player.ExtraFields.CardShopRemovalsUsed);
+        ____cost = ComputeScaledCost(
+            ShopEnhancementConfig.RemoveBaseCost,
+            ShopEnhancementConfig.RemoveStepCost,
+            ____player.ExtraFields.CardShopRemovalsUsed);
     }
 
     [HarmonyPatch(nameof(MerchantCardRemovalEntry.OnTryPurchaseWrapper))]
@@ -500,10 +503,18 @@ public static class MerchantCardRemovalPatches
 
     private static int ComputeGiftServiceCost(int cardCount)
     {
-        int baseCost = Math.Max(0, ShopEnhancementConfig.GiftServiceBaseCost);
-        int stepCost = Math.Max(0, ShopEnhancementConfig.GiftServiceStepCost);
         int safeCount = Math.Max(1, cardCount);
-        return baseCost + (safeCount - 1) * stepCost;
+        return ComputeScaledCost(
+            ShopEnhancementConfig.GiftServiceBaseCost,
+            ShopEnhancementConfig.GiftServiceStepCost,
+            safeCount - 1);
+    }
+
+    private static int ComputeScaledCost(int baseCost, int stepCost, int stepCount)
+    {
+        long cost = Math.Max(0L, baseCost)
+            + Math.Max(0L, stepCost) * Math.Max(0L, stepCount);
+        return (int)Math.Min(cost, int.MaxValue);
     }
 
     private static float ComputeRoll(string seed, int shopVisitIndex, string salt)

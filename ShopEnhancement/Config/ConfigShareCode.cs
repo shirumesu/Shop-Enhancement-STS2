@@ -22,6 +22,11 @@ public static class ConfigShareCode
     public static ShareCodeOperationResult Export(ConfigData data, out string code)
     {
         code = "";
+        if (!ConfigManager.IsConfigDataValid(data))
+        {
+            return ShareCodeOperationResult.InvalidData;
+        }
+
         try
         {
             byte[] json = Encoding.UTF8.GetBytes(ConfigManager.SerializeConfigData(data));
@@ -88,7 +93,7 @@ public static class ConfigShareCode
             }
 
             string json = Encoding.UTF8.GetString(decoded.ToArray());
-            data = ConfigManager.DeserializeConfigData(json, out _);
+            data = ConfigManager.DeserializeConfigData(json, out _, rejectInvalidValues: true);
             return data == null
                 ? ShareCodeOperationResult.InvalidData
                 : ShareCodeOperationResult.Success;

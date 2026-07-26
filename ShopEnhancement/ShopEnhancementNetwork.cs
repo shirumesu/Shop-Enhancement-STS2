@@ -94,11 +94,18 @@ public static class ShopEnhancementNetwork
             if (RunManager.Instance.NetService.Type == NetGameType.Host) return;
 
             MainFile.Logger.Info($"Received config sync from {senderId}");
-            ConfigData? data = ConfigManager.DeserializeConfigData(msg.ConfigJson, out _);
+            ConfigData? data = ConfigManager.DeserializeConfigData(
+                msg.ConfigJson,
+                out _,
+                rejectInvalidValues: true);
             if (data != null)
             {
                 ConfigManager.ApplyConfig(data);
                 MainFile.Logger.Info("Applied host config.");
+            }
+            else
+            {
+                MainFile.Logger.Warn("Ignored config sync with values outside ConfigSchema.");
             }
         }
         catch (Exception ex)

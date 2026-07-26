@@ -147,32 +147,16 @@ public static class ConfigManager
         {
             normalizedName = Path.GetFileNameWithoutExtension(existingPath);
         }
-        string tempPath = $"{path}.tmp";
-
         try
         {
-            string json = SerializeConfigData(data, writeIndented: true);
-            File.WriteAllText(tempPath, json);
-            File.Move(tempPath, path, true);
+            NormalizeConfigData(data);
+            WritePresetFile(path, data);
             return PresetOperationResult.Success;
         }
         catch (Exception ex)
         {
             MainFile.Logger.Error($"Failed to save preset '{normalizedName}': {ex}");
             return PresetOperationResult.Failed;
-        }
-        finally
-        {
-            try
-            {
-                if (File.Exists(tempPath))
-                {
-                    File.Delete(tempPath);
-                }
-            }
-            catch
-            {
-            }
         }
     }
 
@@ -204,6 +188,7 @@ public static class ConfigManager
 
             if (migrated)
             {
+                WritePresetFile(path, data);
                 MainFile.Logger.Info($"Migrated preset '{normalizedName}' to the current configuration format.");
             }
 
@@ -218,6 +203,30 @@ public static class ConfigManager
         {
             MainFile.Logger.Error($"Failed to load preset '{normalizedName}': {ex}");
             return PresetOperationResult.Failed;
+        }
+    }
+
+    private static void WritePresetFile(string path, ConfigData data)
+    {
+        string tempPath = $"{path}.tmp";
+        try
+        {
+            string json = SerializeConfigData(data, writeIndented: true);
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, path, true);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -354,14 +363,14 @@ public static class ConfigManager
 
     public static void ApplyConfig(ConfigData data)
     {
+        NormalizeConfigData(data);
+
         ShopEnhancementConfig.RemoveBaseCost = data.RemoveBaseCost;
         ShopEnhancementConfig.RemoveStepCost = data.RemoveStepCost;
-        ShopEnhancementConfig.RemoveLimitPerShop = Math.Max(ConfigSchema.RemoveLimitPerShop.Min, data.RemoveLimitPerShop);
+        ShopEnhancementConfig.RemoveLimitPerShop = data.RemoveLimitPerShop;
         ShopEnhancementConfig.RefreshCost = data.RefreshCost;
         ShopEnhancementConfig.RefreshLimitPerShop = data.RefreshLimitPerShop;
-        ShopEnhancementConfig.RelicRefreshMode = Enum.IsDefined(data.RelicRefreshMode)
-            ? data.RelicRefreshMode
-            : ConfigSchema.RelicRefreshMode.Default;
+        ShopEnhancementConfig.RelicRefreshMode = data.RelicRefreshMode;
         ShopEnhancementConfig.EnableNoPurchaseReward = data.EnableNoPurchaseReward;
         ShopEnhancementConfig.NoPurchaseRewardGold = data.NoPurchaseRewardGold;
         ShopEnhancementConfig.EnableSkipCardRewardGold = data.EnableSkipCardRewardGold;
@@ -370,14 +379,9 @@ public static class ConfigManager
         ShopEnhancementConfig.CrossClassCardChance = data.CrossClassCardChance;
         ShopEnhancementConfig.EnableSellMode = data.EnableSellMode;
         ShopEnhancementConfig.EnableSellPriceVariance = data.EnableSellPriceVariance;
-        ShopEnhancementConfig.SellPriceVariance = Math.Clamp(
-            data.SellPriceVariance,
-            (float)ConfigSchema.SellPriceVariance.Min,
-            (float)ConfigSchema.SellPriceVariance.Max);
+        ShopEnhancementConfig.SellPriceVariance = data.SellPriceVariance;
         ShopEnhancementConfig.EnableGiftMode = data.EnableGiftMode;
-        ShopEnhancementConfig.RelicSellRulePreset = Enum.IsDefined(data.RelicSellRulePreset)
-            ? data.RelicSellRulePreset
-            : ConfigSchema.RelicSellRulePreset.Default;
+        ShopEnhancementConfig.RelicSellRulePreset = data.RelicSellRulePreset;
         ShopEnhancementConfig.AllowUsedUpRelics = data.AllowUsedUpRelics;
         ShopEnhancementConfig.AllowUponPickupRelics = data.AllowUponPickupRelics;
         ShopEnhancementConfig.AllowWaxRelics = data.AllowWaxRelics;
@@ -386,41 +390,35 @@ public static class ConfigManager
         ShopEnhancementConfig.AllowStarterRelics = data.AllowStarterRelics;
         ShopEnhancementConfig.AllowAncientRelics = data.AllowAncientRelics;
         ShopEnhancementConfig.AllowEventRelics = data.AllowEventRelics;
-        ShopEnhancementConfig.SellCommonRelicPrice = Math.Max(ConfigSchema.SellCommonRelicPrice.Min, data.SellCommonRelicPrice);
-        ShopEnhancementConfig.SellUncommonRelicPrice = Math.Max(ConfigSchema.SellUncommonRelicPrice.Min, data.SellUncommonRelicPrice);
-        ShopEnhancementConfig.SellRareRelicPrice = Math.Max(ConfigSchema.SellRareRelicPrice.Min, data.SellRareRelicPrice);
-        ShopEnhancementConfig.SellShopRelicPrice = Math.Max(ConfigSchema.SellShopRelicPrice.Min, data.SellShopRelicPrice);
-        ShopEnhancementConfig.SellAncientRelicPrice = Math.Max(ConfigSchema.SellAncientRelicPrice.Min, data.SellAncientRelicPrice);
-        ShopEnhancementConfig.SellStarterRelicPrice = Math.Max(ConfigSchema.SellStarterRelicPrice.Min, data.SellStarterRelicPrice);
-        ShopEnhancementConfig.SellEventRelicPrice = Math.Max(ConfigSchema.SellEventRelicPrice.Min, data.SellEventRelicPrice);
-        ShopEnhancementConfig.SellRelicMinGold = Math.Max(ConfigSchema.SellRelicMinGold.Min, data.SellRelicMinGold);
-        ShopEnhancementConfig.SellCommonPotionPrice = Math.Max(ConfigSchema.SellCommonPotionPrice.Min, data.SellCommonPotionPrice);
-        ShopEnhancementConfig.SellUncommonPotionPrice = Math.Max(ConfigSchema.SellUncommonPotionPrice.Min, data.SellUncommonPotionPrice);
-        ShopEnhancementConfig.SellRarePotionPrice = Math.Max(ConfigSchema.SellRarePotionPrice.Min, data.SellRarePotionPrice);
-        ShopEnhancementConfig.SellPotionMinGold = Math.Max(ConfigSchema.SellPotionMinGold.Min, data.SellPotionMinGold);
+        ShopEnhancementConfig.SellCommonRelicPrice = data.SellCommonRelicPrice;
+        ShopEnhancementConfig.SellUncommonRelicPrice = data.SellUncommonRelicPrice;
+        ShopEnhancementConfig.SellRareRelicPrice = data.SellRareRelicPrice;
+        ShopEnhancementConfig.SellShopRelicPrice = data.SellShopRelicPrice;
+        ShopEnhancementConfig.SellAncientRelicPrice = data.SellAncientRelicPrice;
+        ShopEnhancementConfig.SellStarterRelicPrice = data.SellStarterRelicPrice;
+        ShopEnhancementConfig.SellEventRelicPrice = data.SellEventRelicPrice;
+        ShopEnhancementConfig.SellRelicMinGold = data.SellRelicMinGold;
+        ShopEnhancementConfig.SellCommonPotionPrice = data.SellCommonPotionPrice;
+        ShopEnhancementConfig.SellUncommonPotionPrice = data.SellUncommonPotionPrice;
+        ShopEnhancementConfig.SellRarePotionPrice = data.SellRarePotionPrice;
+        ShopEnhancementConfig.SellPotionMinGold = data.SellPotionMinGold;
         ShopEnhancementConfig.EnableRemovalEnchantRandom = data.EnableRemovalEnchantRandom;
         ShopEnhancementConfig.EnableEnchantService = data.EnableEnchantService;
         ShopEnhancementConfig.EnchantStartShopVisit = data.EnchantStartShopVisit;
         ShopEnhancementConfig.EnchantReplaceChance = data.EnchantReplaceChance;
         ShopEnhancementConfig.EnchantCost = data.EnchantCost;
-        ShopEnhancementConfig.EnchantAmountRange = NormalizeRange(
-            data.EnchantAmountRange,
-            ConfigSchema.EnchantAmount.Min,
-            ConfigSchema.EnchantAmount.Max);
-        ShopEnhancementConfig.EnchantCardCountRange = NormalizeRange(
-            data.EnchantCardCountRange,
-            ConfigSchema.EnchantCardCount.Min,
-            ConfigSchema.EnchantCardCount.Max);
+        ShopEnhancementConfig.EnchantAmountRange = data.EnchantAmountRange;
+        ShopEnhancementConfig.EnchantCardCountRange = data.EnchantCardCountRange;
         ShopEnhancementConfig.EnableRandomTeammateGiftService = data.EnableRandomTeammateGiftService;
-        ShopEnhancementConfig.GiftServiceCardCountRange = NormalizeRange(
-            data.GiftServiceCardCountRange,
-            ConfigSchema.GiftServiceCardCount.Min,
-            ConfigSchema.GiftServiceCardCount.Max);
-        ShopEnhancementConfig.GiftServiceBaseCost = Math.Max(ConfigSchema.GiftServiceBaseCost.Min, data.GiftServiceBaseCost);
-        ShopEnhancementConfig.GiftServiceStepCost = Math.Max(ConfigSchema.GiftServiceStepCost.Min, data.GiftServiceStepCost);
+        ShopEnhancementConfig.GiftServiceCardCountRange = data.GiftServiceCardCountRange;
+        ShopEnhancementConfig.GiftServiceBaseCost = data.GiftServiceBaseCost;
+        ShopEnhancementConfig.GiftServiceStepCost = data.GiftServiceStepCost;
     }
 
-    internal static ConfigData? DeserializeConfigData(string json, out bool migrated)
+    internal static ConfigData? DeserializeConfigData(
+        string json,
+        out bool migrated,
+        bool rejectInvalidValues = false)
     {
         migrated = false;
         ConfigData? data = JsonSerializer.Deserialize<ConfigData>(json, CompactJsonOptions);
@@ -434,8 +432,102 @@ public static class ConfigManager
         bool migratedSellPriceVariance = !migratedLegacySellConfig
             && TryMigrateLegacySellPriceVariance(data, document.RootElement);
         bool migratedBrokenRanges = TryMigrateBrokenRanges(data, document.RootElement);
-        migrated = migratedLegacySellConfig || migratedSellPriceVariance || migratedBrokenRanges;
+        if (rejectInvalidValues && !IsConfigDataValid(data))
+        {
+            return null;
+        }
+
+        bool normalized = NormalizeConfigData(data);
+        migrated = migratedLegacySellConfig
+            || migratedSellPriceVariance
+            || migratedBrokenRanges
+            || normalized;
         return data;
+    }
+
+    internal static bool IsConfigDataValid(ConfigData data)
+    {
+        return IsValidInt(data.RemoveBaseCost, ConfigSchema.RemoveBaseCost.Min, ConfigSchema.RemoveBaseCost.Max, ConfigSchema.RemoveBaseCost.Step)
+            && IsValidInt(data.RemoveStepCost, ConfigSchema.RemoveStepCost.Min, ConfigSchema.RemoveStepCost.Max, ConfigSchema.RemoveStepCost.Step)
+            && IsValidInt(data.RemoveLimitPerShop, ConfigSchema.RemoveLimitPerShop.Min, ConfigSchema.RemoveLimitPerShop.Max, ConfigSchema.RemoveLimitPerShop.Step)
+            && IsValidInt(data.RefreshCost, ConfigSchema.RefreshCost.Min, ConfigSchema.RefreshCost.Max, ConfigSchema.RefreshCost.Step)
+            && IsValidInt(data.RefreshLimitPerShop, ConfigSchema.RefreshLimitPerShop.Min, ConfigSchema.RefreshLimitPerShop.Max, ConfigSchema.RefreshLimitPerShop.Step)
+            && Enum.IsDefined(data.RelicRefreshMode)
+            && IsValidInt(data.NoPurchaseRewardGold, ConfigSchema.NoPurchaseRewardGold.Min, ConfigSchema.NoPurchaseRewardGold.Max, ConfigSchema.NoPurchaseRewardGold.Step)
+            && IsValidInt(data.SkipCardRewardGoldAmount, ConfigSchema.SkipCardRewardGoldAmount.Min, ConfigSchema.SkipCardRewardGoldAmount.Max, ConfigSchema.SkipCardRewardGoldAmount.Step)
+            && IsValidFloat(data.CrossClassCardChance, ConfigSchema.CrossClassCardChance.Min, ConfigSchema.CrossClassCardChance.Max, ConfigSchema.CrossClassCardChance.Step)
+            && IsValidFloat(data.SellPriceVariance, ConfigSchema.SellPriceVariance.Min, ConfigSchema.SellPriceVariance.Max, ConfigSchema.SellPriceVariance.Step)
+            && Enum.IsDefined(data.RelicSellRulePreset)
+            && IsValidInt(data.SellCommonRelicPrice, ConfigSchema.SellCommonRelicPrice.Min, ConfigSchema.SellCommonRelicPrice.Max, ConfigSchema.SellCommonRelicPrice.Step)
+            && IsValidInt(data.SellUncommonRelicPrice, ConfigSchema.SellUncommonRelicPrice.Min, ConfigSchema.SellUncommonRelicPrice.Max, ConfigSchema.SellUncommonRelicPrice.Step)
+            && IsValidInt(data.SellRareRelicPrice, ConfigSchema.SellRareRelicPrice.Min, ConfigSchema.SellRareRelicPrice.Max, ConfigSchema.SellRareRelicPrice.Step)
+            && IsValidInt(data.SellShopRelicPrice, ConfigSchema.SellShopRelicPrice.Min, ConfigSchema.SellShopRelicPrice.Max, ConfigSchema.SellShopRelicPrice.Step)
+            && IsValidInt(data.SellAncientRelicPrice, ConfigSchema.SellAncientRelicPrice.Min, ConfigSchema.SellAncientRelicPrice.Max, ConfigSchema.SellAncientRelicPrice.Step)
+            && IsValidInt(data.SellStarterRelicPrice, ConfigSchema.SellStarterRelicPrice.Min, ConfigSchema.SellStarterRelicPrice.Max, ConfigSchema.SellStarterRelicPrice.Step)
+            && IsValidInt(data.SellEventRelicPrice, ConfigSchema.SellEventRelicPrice.Min, ConfigSchema.SellEventRelicPrice.Max, ConfigSchema.SellEventRelicPrice.Step)
+            && IsValidInt(data.SellRelicMinGold, ConfigSchema.SellRelicMinGold.Min, ConfigSchema.SellRelicMinGold.Max, ConfigSchema.SellRelicMinGold.Step)
+            && IsValidInt(data.SellCommonPotionPrice, ConfigSchema.SellCommonPotionPrice.Min, ConfigSchema.SellCommonPotionPrice.Max, ConfigSchema.SellCommonPotionPrice.Step)
+            && IsValidInt(data.SellUncommonPotionPrice, ConfigSchema.SellUncommonPotionPrice.Min, ConfigSchema.SellUncommonPotionPrice.Max, ConfigSchema.SellUncommonPotionPrice.Step)
+            && IsValidInt(data.SellRarePotionPrice, ConfigSchema.SellRarePotionPrice.Min, ConfigSchema.SellRarePotionPrice.Max, ConfigSchema.SellRarePotionPrice.Step)
+            && IsValidInt(data.SellPotionMinGold, ConfigSchema.SellPotionMinGold.Min, ConfigSchema.SellPotionMinGold.Max, ConfigSchema.SellPotionMinGold.Step)
+            && IsValidInt(data.EnchantStartShopVisit, ConfigSchema.EnchantStartShopVisit.Min, ConfigSchema.EnchantStartShopVisit.Max, ConfigSchema.EnchantStartShopVisit.Step)
+            && IsValidFloat(data.EnchantReplaceChance, ConfigSchema.EnchantReplaceChance.Min, ConfigSchema.EnchantReplaceChance.Max, ConfigSchema.EnchantReplaceChance.Step)
+            && IsValidInt(data.EnchantCost, ConfigSchema.EnchantCost.Min, ConfigSchema.EnchantCost.Max, ConfigSchema.EnchantCost.Step)
+            && IsValidRange(data.EnchantAmountRange, ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step)
+            && IsValidRange(data.EnchantCardCountRange, ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step)
+            && IsValidRange(data.GiftServiceCardCountRange, ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step)
+            && IsValidInt(data.GiftServiceBaseCost, ConfigSchema.GiftServiceBaseCost.Min, ConfigSchema.GiftServiceBaseCost.Max, ConfigSchema.GiftServiceBaseCost.Step)
+            && IsValidInt(data.GiftServiceStepCost, ConfigSchema.GiftServiceStepCost.Min, ConfigSchema.GiftServiceStepCost.Max, ConfigSchema.GiftServiceStepCost.Step);
+    }
+
+    private static bool NormalizeConfigData(ConfigData data)
+    {
+        bool changed = false;
+
+        changed |= NormalizeInt(data.RemoveBaseCost, ConfigSchema.RemoveBaseCost.Min, ConfigSchema.RemoveBaseCost.Max, ConfigSchema.RemoveBaseCost.Step, value => data.RemoveBaseCost = value);
+        changed |= NormalizeInt(data.RemoveStepCost, ConfigSchema.RemoveStepCost.Min, ConfigSchema.RemoveStepCost.Max, ConfigSchema.RemoveStepCost.Step, value => data.RemoveStepCost = value);
+        changed |= NormalizeInt(data.RemoveLimitPerShop, ConfigSchema.RemoveLimitPerShop.Min, ConfigSchema.RemoveLimitPerShop.Max, ConfigSchema.RemoveLimitPerShop.Step, value => data.RemoveLimitPerShop = value);
+        changed |= NormalizeInt(data.RefreshCost, ConfigSchema.RefreshCost.Min, ConfigSchema.RefreshCost.Max, ConfigSchema.RefreshCost.Step, value => data.RefreshCost = value);
+        changed |= NormalizeInt(data.RefreshLimitPerShop, ConfigSchema.RefreshLimitPerShop.Min, ConfigSchema.RefreshLimitPerShop.Max, ConfigSchema.RefreshLimitPerShop.Step, value => data.RefreshLimitPerShop = value);
+        if (!Enum.IsDefined(data.RelicRefreshMode))
+        {
+            data.RelicRefreshMode = ConfigSchema.RelicRefreshMode.Default;
+            changed = true;
+        }
+
+        changed |= NormalizeInt(data.NoPurchaseRewardGold, ConfigSchema.NoPurchaseRewardGold.Min, ConfigSchema.NoPurchaseRewardGold.Max, ConfigSchema.NoPurchaseRewardGold.Step, value => data.NoPurchaseRewardGold = value);
+        changed |= NormalizeInt(data.SkipCardRewardGoldAmount, ConfigSchema.SkipCardRewardGoldAmount.Min, ConfigSchema.SkipCardRewardGoldAmount.Max, ConfigSchema.SkipCardRewardGoldAmount.Step, value => data.SkipCardRewardGoldAmount = value);
+        changed |= NormalizeFloat(data.CrossClassCardChance, ConfigSchema.CrossClassCardChance.Default, ConfigSchema.CrossClassCardChance.Min, ConfigSchema.CrossClassCardChance.Max, ConfigSchema.CrossClassCardChance.Step, value => data.CrossClassCardChance = value);
+        changed |= NormalizeFloat(data.SellPriceVariance, ConfigSchema.SellPriceVariance.Default, ConfigSchema.SellPriceVariance.Min, ConfigSchema.SellPriceVariance.Max, ConfigSchema.SellPriceVariance.Step, value => data.SellPriceVariance = value);
+        if (!Enum.IsDefined(data.RelicSellRulePreset))
+        {
+            data.RelicSellRulePreset = ConfigSchema.RelicSellRulePreset.Default;
+            changed = true;
+        }
+
+        changed |= NormalizeInt(data.SellCommonRelicPrice, ConfigSchema.SellCommonRelicPrice.Min, ConfigSchema.SellCommonRelicPrice.Max, ConfigSchema.SellCommonRelicPrice.Step, value => data.SellCommonRelicPrice = value);
+        changed |= NormalizeInt(data.SellUncommonRelicPrice, ConfigSchema.SellUncommonRelicPrice.Min, ConfigSchema.SellUncommonRelicPrice.Max, ConfigSchema.SellUncommonRelicPrice.Step, value => data.SellUncommonRelicPrice = value);
+        changed |= NormalizeInt(data.SellRareRelicPrice, ConfigSchema.SellRareRelicPrice.Min, ConfigSchema.SellRareRelicPrice.Max, ConfigSchema.SellRareRelicPrice.Step, value => data.SellRareRelicPrice = value);
+        changed |= NormalizeInt(data.SellShopRelicPrice, ConfigSchema.SellShopRelicPrice.Min, ConfigSchema.SellShopRelicPrice.Max, ConfigSchema.SellShopRelicPrice.Step, value => data.SellShopRelicPrice = value);
+        changed |= NormalizeInt(data.SellAncientRelicPrice, ConfigSchema.SellAncientRelicPrice.Min, ConfigSchema.SellAncientRelicPrice.Max, ConfigSchema.SellAncientRelicPrice.Step, value => data.SellAncientRelicPrice = value);
+        changed |= NormalizeInt(data.SellStarterRelicPrice, ConfigSchema.SellStarterRelicPrice.Min, ConfigSchema.SellStarterRelicPrice.Max, ConfigSchema.SellStarterRelicPrice.Step, value => data.SellStarterRelicPrice = value);
+        changed |= NormalizeInt(data.SellEventRelicPrice, ConfigSchema.SellEventRelicPrice.Min, ConfigSchema.SellEventRelicPrice.Max, ConfigSchema.SellEventRelicPrice.Step, value => data.SellEventRelicPrice = value);
+        changed |= NormalizeInt(data.SellRelicMinGold, ConfigSchema.SellRelicMinGold.Min, ConfigSchema.SellRelicMinGold.Max, ConfigSchema.SellRelicMinGold.Step, value => data.SellRelicMinGold = value);
+        changed |= NormalizeInt(data.SellCommonPotionPrice, ConfigSchema.SellCommonPotionPrice.Min, ConfigSchema.SellCommonPotionPrice.Max, ConfigSchema.SellCommonPotionPrice.Step, value => data.SellCommonPotionPrice = value);
+        changed |= NormalizeInt(data.SellUncommonPotionPrice, ConfigSchema.SellUncommonPotionPrice.Min, ConfigSchema.SellUncommonPotionPrice.Max, ConfigSchema.SellUncommonPotionPrice.Step, value => data.SellUncommonPotionPrice = value);
+        changed |= NormalizeInt(data.SellRarePotionPrice, ConfigSchema.SellRarePotionPrice.Min, ConfigSchema.SellRarePotionPrice.Max, ConfigSchema.SellRarePotionPrice.Step, value => data.SellRarePotionPrice = value);
+        changed |= NormalizeInt(data.SellPotionMinGold, ConfigSchema.SellPotionMinGold.Min, ConfigSchema.SellPotionMinGold.Max, ConfigSchema.SellPotionMinGold.Step, value => data.SellPotionMinGold = value);
+
+        changed |= NormalizeInt(data.EnchantStartShopVisit, ConfigSchema.EnchantStartShopVisit.Min, ConfigSchema.EnchantStartShopVisit.Max, ConfigSchema.EnchantStartShopVisit.Step, value => data.EnchantStartShopVisit = value);
+        changed |= NormalizeFloat(data.EnchantReplaceChance, ConfigSchema.EnchantReplaceChance.Default, ConfigSchema.EnchantReplaceChance.Min, ConfigSchema.EnchantReplaceChance.Max, ConfigSchema.EnchantReplaceChance.Step, value => data.EnchantReplaceChance = value);
+        changed |= NormalizeInt(data.EnchantCost, ConfigSchema.EnchantCost.Min, ConfigSchema.EnchantCost.Max, ConfigSchema.EnchantCost.Step, value => data.EnchantCost = value);
+        changed |= NormalizeRange(data.EnchantAmountRange, ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step, value => data.EnchantAmountRange = value);
+        changed |= NormalizeRange(data.EnchantCardCountRange, ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step, value => data.EnchantCardCountRange = value);
+        changed |= NormalizeRange(data.GiftServiceCardCountRange, ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step, value => data.GiftServiceCardCountRange = value);
+        changed |= NormalizeInt(data.GiftServiceBaseCost, ConfigSchema.GiftServiceBaseCost.Min, ConfigSchema.GiftServiceBaseCost.Max, ConfigSchema.GiftServiceBaseCost.Step, value => data.GiftServiceBaseCost = value);
+        changed |= NormalizeInt(data.GiftServiceStepCost, ConfigSchema.GiftServiceStepCost.Min, ConfigSchema.GiftServiceStepCost.Max, ConfigSchema.GiftServiceStepCost.Step, value => data.GiftServiceStepCost = value);
+
+        return changed;
     }
 
     private static bool TryMigrateBrokenRanges(ConfigData data, JsonElement root)
@@ -577,10 +669,85 @@ public static class ConfigManager
                 : fallback;
     }
 
-    private static Vector2I NormalizeRange(Vector2I range, int minClamp, int maxClamp)
+    private static bool IsValidInt(int value, int min, int max, int step)
     {
-        int min = Math.Clamp(Math.Min(range.X, range.Y), minClamp, maxClamp);
-        int max = Math.Clamp(Math.Max(range.X, range.Y), minClamp, maxClamp);
-        return new Vector2I(min, Math.Max(min, max));
+        return value >= min && value <= max && (value - min) % step == 0;
+    }
+
+    private static bool IsValidFloat(float value, double min, double max, double step)
+    {
+        if (!float.IsFinite(value) || value < min || value > max)
+        {
+            return false;
+        }
+
+        double stepIndex = (value - min) / step;
+        return Math.Abs(stepIndex - Math.Round(stepIndex)) < 0.0001;
+    }
+
+    private static bool IsValidRange(Vector2I range, int min, int max, int step)
+    {
+        return range.X <= range.Y
+            && IsValidInt(range.X, min, max, step)
+            && IsValidInt(range.Y, min, max, step);
+    }
+
+    private static bool NormalizeInt(int value, int min, int max, int step, Action<int> apply)
+    {
+        int normalized = Math.Clamp(value, min, max);
+        normalized = min + ((normalized - min) / step) * step;
+        if (normalized == value)
+        {
+            return false;
+        }
+
+        apply(normalized);
+        return true;
+    }
+
+    private static bool NormalizeFloat(
+        float value,
+        float fallback,
+        double min,
+        double max,
+        double step,
+        Action<float> apply)
+    {
+        double source = float.IsFinite(value) ? value : fallback;
+        double clamped = Math.Clamp(source, min, max);
+        double normalized = min + Math.Round((clamped - min) / step) * step;
+        float normalizedValue = (float)Math.Clamp(normalized, min, max);
+        if (normalizedValue == value)
+        {
+            return false;
+        }
+
+        apply(normalizedValue);
+        return true;
+    }
+
+    private static bool NormalizeRange(
+        Vector2I range,
+        int min,
+        int max,
+        int step,
+        Action<Vector2I> apply)
+    {
+        int normalizedMin = NormalizeIntValue(Math.Min(range.X, range.Y), min, max, step);
+        int normalizedMax = NormalizeIntValue(Math.Max(range.X, range.Y), min, max, step);
+        Vector2I normalized = new(normalizedMin, Math.Max(normalizedMin, normalizedMax));
+        if (normalized == range)
+        {
+            return false;
+        }
+
+        apply(normalized);
+        return true;
+    }
+
+    private static int NormalizeIntValue(int value, int min, int max, int step)
+    {
+        int normalized = Math.Clamp(value, min, max);
+        return min + ((normalized - min) / step) * step;
     }
 }
