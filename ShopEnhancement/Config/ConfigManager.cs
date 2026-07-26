@@ -34,6 +34,8 @@ public static class ConfigManager
     private const int LegacyCommonPotionBasePrice = 50;
     private const int LegacyUncommonPotionBasePrice = 75;
     private const int LegacyRarePotionBasePrice = 100;
+    private static readonly JsonSerializerOptions CompactJsonOptions = new();
+    private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
 
     private static string UserDataDir => "user://";
     private static string ModConfigDir => System.IO.Path.Combine(ProjectSettings.GlobalizePath(UserDataDir), ConfigDirName);
@@ -67,7 +69,7 @@ public static class ConfigManager
                 if (migrated)
                 {
                     WriteConfigFile(data);
-                    MainFile.Logger.Info("Migrated legacy sell-mode config to rarity-based sell prices.");
+                    MainFile.Logger.Info("Migrated ShopEnhancement configuration to the current format.");
                 }
             }
         }
@@ -93,8 +95,15 @@ public static class ConfigManager
 
     private static void WriteConfigFile(ConfigData data)
     {
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        string json = SerializeConfigData(data, writeIndented: true);
         File.WriteAllText(ConfigPath, json);
+    }
+
+    internal static string SerializeConfigData(ConfigData data, bool writeIndented = false)
+    {
+        return JsonSerializer.Serialize(
+            data,
+            writeIndented ? IndentedJsonOptions : CompactJsonOptions);
     }
 
     public static List<string> GetPresets()
@@ -142,7 +151,7 @@ public static class ConfigManager
 
         try
         {
-            string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+            string json = SerializeConfigData(data, writeIndented: true);
             File.WriteAllText(tempPath, json);
             File.Move(tempPath, path, true);
             return PresetOperationResult.Success;
@@ -195,7 +204,7 @@ public static class ConfigManager
 
             if (migrated)
             {
-                MainFile.Logger.Info($"Migrated legacy sell-mode config from preset '{normalizedName}'.");
+                MainFile.Logger.Info($"Migrated preset '{normalizedName}' to the current configuration format.");
             }
 
             return PresetOperationResult.Success;
@@ -411,10 +420,10 @@ public static class ConfigManager
         ShopEnhancementConfig.GiftServiceStepCost = Math.Max(ConfigSchema.GiftServiceStepCost.Min, data.GiftServiceStepCost);
     }
 
-    private static ConfigData? DeserializeConfigData(string json, out bool migrated)
+    internal static ConfigData? DeserializeConfigData(string json, out bool migrated)
     {
         migrated = false;
-        ConfigData? data = JsonSerializer.Deserialize<ConfigData>(json);
+        ConfigData? data = JsonSerializer.Deserialize<ConfigData>(json, CompactJsonOptions);
         if (data == null)
         {
             return null;
@@ -424,8 +433,52 @@ public static class ConfigManager
         bool migratedLegacySellConfig = TryMigrateLegacySellConfig(data, document.RootElement);
         bool migratedSellPriceVariance = !migratedLegacySellConfig
             && TryMigrateLegacySellPriceVariance(data, document.RootElement);
-        migrated = migratedLegacySellConfig || migratedSellPriceVariance;
+        bool migratedBrokenRanges = TryMigrateBrokenRanges(data, document.RootElement);
+        migrated = migratedLegacySellConfig || migratedSellPriceVariance || migratedBrokenRanges;
         return data;
+    }
+
+    private static bool TryMigrateBrokenRanges(ConfigData data, JsonElement root)
+    {
+        bool migrated = false;
+        if (HasBrokenRange(root, nameof(ConfigData.EnchantAmountRange)))
+        {
+            data.EnchantAmountRange = new Vector2I(
+                ConfigSchema.EnchantAmount.DefaultMin,
+                ConfigSchema.EnchantAmount.DefaultMax);
+            migrated = true;
+        }
+
+        if (HasBrokenRange(root, nameof(ConfigData.EnchantCardCountRange)))
+        {
+            data.EnchantCardCountRange = new Vector2I(
+                ConfigSchema.EnchantCardCount.DefaultMin,
+                ConfigSchema.EnchantCardCount.DefaultMax);
+            migrated = true;
+        }
+
+        if (HasBrokenRange(root, nameof(ConfigData.GiftServiceCardCountRange)))
+        {
+            data.GiftServiceCardCountRange = new Vector2I(
+                ConfigSchema.GiftServiceCardCount.DefaultMin,
+                ConfigSchema.GiftServiceCardCount.DefaultMax);
+            migrated = true;
+        }
+
+        return migrated;
+    }
+
+    private static bool HasBrokenRange(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out JsonElement range)
+            || range.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        bool hasMin = range.TryGetProperty("Min", out _) || range.TryGetProperty("X", out _);
+        bool hasMax = range.TryGetProperty("Max", out _) || range.TryGetProperty("Y", out _);
+        return !hasMin || !hasMax;
     }
 
     private static bool TryMigrateLegacySellConfig(ConfigData data, JsonElement root)

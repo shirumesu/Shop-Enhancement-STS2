@@ -56,13 +56,16 @@ public class ConfigData
     public int EnchantStartShopVisit { get; set; } = ConfigSchema.EnchantStartShopVisit.Default;
     public float EnchantReplaceChance { get; set; } = ConfigSchema.EnchantReplaceChance.Default;
     public int EnchantCost { get; set; } = ConfigSchema.EnchantCost.Default;
+    [JsonConverter(typeof(Vector2IJsonConverter))]
     public Vector2I EnchantAmountRange { get; set; } = new(
         ConfigSchema.EnchantAmount.DefaultMin,
         ConfigSchema.EnchantAmount.DefaultMax);
+    [JsonConverter(typeof(Vector2IJsonConverter))]
     public Vector2I EnchantCardCountRange { get; set; } = new(
         ConfigSchema.EnchantCardCount.DefaultMin,
         ConfigSchema.EnchantCardCount.DefaultMax);
     public bool EnableRandomTeammateGiftService { get; set; } = ConfigSchema.EnableRandomTeammateGiftService.Default;
+    [JsonConverter(typeof(Vector2IJsonConverter))]
     public Vector2I GiftServiceCardCountRange { get; set; } = new(
         ConfigSchema.GiftServiceCardCount.DefaultMin,
         ConfigSchema.GiftServiceCardCount.DefaultMax);

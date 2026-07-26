@@ -10,6 +10,15 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     private static readonly Vector2 CompactPresetButtonSize = new(168, 48);
     private static bool _syncing;
     private static RelicSellRuleSnapshot _lastRelicSellRuleSnapshot;
+    private static string _shareCode = "";
+    private static bool _shareCodeInputChanged;
+    private static bool _rangeEndpointAdjusted;
+    private static int _enchantAmountMin = ConfigSchema.EnchantAmount.DefaultMin;
+    private static int _enchantAmountMax = ConfigSchema.EnchantAmount.DefaultMax;
+    private static int _enchantCardCountMin = ConfigSchema.EnchantCardCount.DefaultMin;
+    private static int _enchantCardCountMax = ConfigSchema.EnchantCardCount.DefaultMax;
+    private static int _giftServiceCardCountMin = ConfigSchema.GiftServiceCardCount.DefaultMin;
+    private static int _giftServiceCardCountMax = ConfigSchema.GiftServiceCardCount.DefaultMax;
     private Control? _optionContainer;
     private VBoxContainer? _presetListContainer;
     private RichTextLabel? _presetStatusLabel;
@@ -18,6 +27,18 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigIgnoreRestoreDefaults]
     [ConfigTextInput(TextInputPreset.SafeDisplayName, MaxLength = 32)]
     public static string PresetName { get; set; } = "";
+
+    [ConfigIgnore]
+    [ConfigTextInput(MaxLength = 8192)]
+    public static string ShareCode
+    {
+        get => _shareCode;
+        set
+        {
+            _shareCode = value;
+            _shareCodeInputChanged = true;
+        }
+    }
 
     [ConfigSection("BasicShop")]
     [ConfigSlider(ConfigSchema.RefreshCost.Min, ConfigSchema.RefreshCost.Max, ConfigSchema.RefreshCost.Step)]
@@ -148,24 +169,48 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     public static int EnchantCost { get; set; } = ConfigSchema.EnchantCost.Default;
 
     [ConfigSlider(ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step)]
-    public static int EnchantAmountMin { get; set; } = ConfigSchema.EnchantAmount.DefaultMin;
+    public static int EnchantAmountMin
+    {
+        get => _enchantAmountMin;
+        set => SetRangeMinimum(ref _enchantAmountMin, ref _enchantAmountMax, value);
+    }
 
     [ConfigSlider(ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step)]
-    public static int EnchantAmountMax { get; set; } = ConfigSchema.EnchantAmount.DefaultMax;
+    public static int EnchantAmountMax
+    {
+        get => _enchantAmountMax;
+        set => SetRangeMaximum(ref _enchantAmountMin, ref _enchantAmountMax, value);
+    }
 
     [ConfigSlider(ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step)]
-    public static int EnchantCardCountMin { get; set; } = ConfigSchema.EnchantCardCount.DefaultMin;
+    public static int EnchantCardCountMin
+    {
+        get => _enchantCardCountMin;
+        set => SetRangeMinimum(ref _enchantCardCountMin, ref _enchantCardCountMax, value);
+    }
 
     [ConfigSlider(ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step)]
-    public static int EnchantCardCountMax { get; set; } = ConfigSchema.EnchantCardCount.DefaultMax;
+    public static int EnchantCardCountMax
+    {
+        get => _enchantCardCountMax;
+        set => SetRangeMaximum(ref _enchantCardCountMin, ref _enchantCardCountMax, value);
+    }
 
     public static bool EnableRandomTeammateGiftService { get; set; } = ConfigSchema.EnableRandomTeammateGiftService.Default;
 
     [ConfigSlider(ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step)]
-    public static int GiftServiceCardCountMin { get; set; } = ConfigSchema.GiftServiceCardCount.DefaultMin;
+    public static int GiftServiceCardCountMin
+    {
+        get => _giftServiceCardCountMin;
+        set => SetRangeMinimum(ref _giftServiceCardCountMin, ref _giftServiceCardCountMax, value);
+    }
 
     [ConfigSlider(ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step)]
-    public static int GiftServiceCardCountMax { get; set; } = ConfigSchema.GiftServiceCardCount.DefaultMax;
+    public static int GiftServiceCardCountMax
+    {
+        get => _giftServiceCardCountMax;
+        set => SetRangeMaximum(ref _giftServiceCardCountMin, ref _giftServiceCardCountMax, value);
+    }
 
     [ConfigSlider(ConfigSchema.GiftServiceBaseCost.Min, ConfigSchema.GiftServiceBaseCost.Max, ConfigSchema.GiftServiceBaseCost.Step)]
     public static int GiftServiceBaseCost { get; set; } = ConfigSchema.GiftServiceBaseCost.Default;
@@ -194,6 +239,28 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             "PresetActions",
             "SavePreset",
             SaveCurrentPreset));
+
+        presetContent.AddChild(CreateSectionHeader(
+            "ShareCodeTools",
+            alignToTop: false,
+            centered: false));
+
+        var shareCodeProperty = typeof(ShopEnhancementBaseLibConfig).GetProperty(nameof(ShareCode));
+        if (shareCodeProperty != null)
+        {
+            NConfigOptionRow shareCodeOption = CreateLineEditOption(shareCodeProperty);
+            shareCodeOption.SettingControl.CustomMinimumSize = new Vector2(720, 64);
+            presetContent.AddChild(shareCodeOption);
+        }
+
+        presetContent.AddChild(CreateButton(
+            "ExportShareCodeActions",
+            "ExportCurrentShareCode",
+            ExportCurrentConfigFromUi));
+        presetContent.AddChild(CreateButton(
+            "ImportShareCodeActions",
+            "ImportShareCode",
+            ImportShareCodeFromUi));
 
         _presetStatusLabel = CreateRawLabelControl("", 24);
         _presetStatusLabel.CustomMinimumSize = new Vector2(0, 40);
@@ -303,6 +370,84 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         RefreshPresetList();
     }
 
+    private void ExportCurrentConfigFromUi()
+    {
+        ExportConfigToUi(ToConfigData());
+    }
+
+    private void ExportPresetFromUi(string presetName)
+    {
+        PresetOperationResult result = ConfigManager.LoadPreset(presetName, out ConfigData? data);
+        if (result != PresetOperationResult.Success || data == null)
+        {
+            SetPresetStatus(GetPresetErrorLabel(result));
+            return;
+        }
+
+        ExportConfigToUi(data);
+    }
+
+    private void ExportConfigToUi(ConfigData data)
+    {
+        ShareCodeOperationResult result = ConfigShareCode.Export(data, out string code);
+        if (result != ShareCodeOperationResult.Success)
+        {
+            SetPresetStatus(GetShareCodeErrorLabel(result));
+            return;
+        }
+
+        try
+        {
+            _syncing = true;
+            _shareCode = code;
+            _shareCodeInputChanged = false;
+            ConfigReloaded();
+        }
+        finally
+        {
+            _syncing = false;
+        }
+
+        try
+        {
+            DisplayServer.ClipboardSet(code);
+            SetPresetStatus("ShareCodeStatusExported");
+        }
+        catch (Exception ex)
+        {
+            MainFile.Logger.Warn($"Failed to copy configuration share code to the clipboard: {ex}");
+            SetPresetStatus("ShareCodeStatusExportedNoClipboard");
+        }
+    }
+
+    private void ImportShareCodeFromUi()
+    {
+        ShareCodeOperationResult result = ConfigShareCode.Import(ShareCode, out ConfigData? data);
+        if (result != ShareCodeOperationResult.Success || data == null)
+        {
+            SetPresetStatus(GetShareCodeErrorLabel(result));
+            return;
+        }
+
+        try
+        {
+            _syncing = true;
+            CopyFromConfigData(data);
+            NormalizeRelicSellRuleSettings();
+            ConfigManager.Save(ToConfigData());
+            CopyFromRuntimeConfig();
+            _lastRelicSellRuleSnapshot = CaptureRelicSellRuleSnapshot();
+            SaveDebounced(0);
+            ConfigReloaded();
+        }
+        finally
+        {
+            _syncing = false;
+        }
+
+        SetPresetStatus("ShareCodeStatusImported");
+    }
+
     private void RefreshPresetList()
     {
         if (_presetListContainer == null)
@@ -334,7 +479,11 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
                 NConfigButton deleteButton = CreateRawButtonControl(
                     GetLabelText("DeletePreset"),
                     () => DeletePresetFromUi(presetName));
+                NConfigButton exportButton = CreateRawButtonControl(
+                    GetLabelText("ExportPreset"),
+                    () => ExportPresetFromUi(presetName));
                 MakePresetButtonCompact(loadButton);
+                MakePresetButtonCompact(exportButton);
                 MakePresetButtonCompact(deleteButton);
 
                 HBoxContainer actions = new()
@@ -344,6 +493,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
                 };
                 actions.AddThemeConstantOverride("separation", 8);
                 actions.AddChild(loadButton);
+                actions.AddChild(exportButton);
                 actions.AddChild(deleteButton);
 
                 RichTextLabel nameLabel = CreateRawLabelControl(presetName, 28);
@@ -416,6 +566,18 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         };
     }
 
+    private static string GetShareCodeErrorLabel(ShareCodeOperationResult result)
+    {
+        return result switch
+        {
+            ShareCodeOperationResult.EmptyCode => "ShareCodeStatusEmpty",
+            ShareCodeOperationResult.InvalidFormat => "ShareCodeStatusInvalidFormat",
+            ShareCodeOperationResult.UnsupportedVersion => "ShareCodeStatusUnsupportedVersion",
+            ShareCodeOperationResult.InvalidData => "ShareCodeStatusInvalidData",
+            _ => "ShareCodeStatusFailed"
+        };
+    }
+
     public static void Register(string modId)
     {
         ConfigSchema.Validate();
@@ -436,6 +598,12 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     {
         if (_syncing)
         {
+            return;
+        }
+
+        if (_shareCodeInputChanged)
+        {
+            _shareCodeInputChanged = false;
             return;
         }
 
@@ -466,7 +634,9 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
             }
         }
 
-        SyncToLegacyConfig(refreshUi: presetChanged || optionsChanged);
+        bool rangeEndpointAdjusted = _rangeEndpointAdjusted;
+        _rangeEndpointAdjusted = false;
+        SyncToLegacyConfig(refreshUi: presetChanged || optionsChanged || rangeEndpointAdjusted);
     }
 
     private void HandleConfigReloaded()
@@ -553,15 +723,13 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
         EnchantStartShopVisit = data.EnchantStartShopVisit;
         EnchantReplaceChance = data.EnchantReplaceChance;
         EnchantCost = data.EnchantCost;
-        EnchantAmountMin = data.EnchantAmountRange.X;
-        EnchantAmountMax = data.EnchantAmountRange.Y;
-        EnchantCardCountMin = data.EnchantCardCountRange.X;
-        EnchantCardCountMax = data.EnchantCardCountRange.Y;
+        SetEnchantAmountRange(data.EnchantAmountRange);
+        SetEnchantCardCountRange(data.EnchantCardCountRange);
         EnableRandomTeammateGiftService = data.EnableRandomTeammateGiftService;
-        GiftServiceCardCountMin = data.GiftServiceCardCountRange.X;
-        GiftServiceCardCountMax = data.GiftServiceCardCountRange.Y;
+        SetGiftServiceCardCountRange(data.GiftServiceCardCountRange);
         GiftServiceBaseCost = data.GiftServiceBaseCost;
         GiftServiceStepCost = data.GiftServiceStepCost;
+        _rangeEndpointAdjusted = false;
     }
 
     private static ConfigData ToConfigData()
@@ -622,6 +790,51 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     private static Vector2I SortedRange(int first, int second)
     {
         return new Vector2I(Math.Min(first, second), Math.Max(first, second));
+    }
+
+    private static void SetRangeMinimum(ref int minimum, ref int maximum, int value)
+    {
+        minimum = value;
+        if (minimum <= maximum)
+        {
+            return;
+        }
+
+        maximum = minimum;
+        _rangeEndpointAdjusted = true;
+    }
+
+    private static void SetRangeMaximum(ref int minimum, ref int maximum, int value)
+    {
+        maximum = value;
+        if (maximum >= minimum)
+        {
+            return;
+        }
+
+        minimum = maximum;
+        _rangeEndpointAdjusted = true;
+    }
+
+    private static void SetEnchantAmountRange(Vector2I range)
+    {
+        Vector2I sorted = SortedRange(range.X, range.Y);
+        _enchantAmountMin = sorted.X;
+        _enchantAmountMax = sorted.Y;
+    }
+
+    private static void SetEnchantCardCountRange(Vector2I range)
+    {
+        Vector2I sorted = SortedRange(range.X, range.Y);
+        _enchantCardCountMin = sorted.X;
+        _enchantCardCountMax = sorted.Y;
+    }
+
+    private static void SetGiftServiceCardCountRange(Vector2I range)
+    {
+        Vector2I sorted = SortedRange(range.X, range.Y);
+        _giftServiceCardCountMin = sorted.X;
+        _giftServiceCardCountMax = sorted.Y;
     }
 
     private static void NormalizeRelicSellRuleSettings()

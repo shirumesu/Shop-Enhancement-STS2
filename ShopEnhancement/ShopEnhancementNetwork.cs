@@ -15,7 +15,6 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 
-using System.Text.Json;
 using ShopEnhancement.Config;
 using ShopEnhancement.Patches;
 
@@ -74,7 +73,7 @@ public static class ShopEnhancementNetwork
         try
         {
             var configData = ConfigManager.GetCurrentConfig();
-            string json = JsonSerializer.Serialize(configData);
+            string json = ConfigManager.SerializeConfigData(configData);
             var msg = new SyncConfigMessage { ConfigJson = json };
             netService.SendMessage(msg);
             MainFile.Logger.Info("Broadcasted ShopEnhancement config to clients.");
@@ -95,7 +94,7 @@ public static class ShopEnhancementNetwork
             if (RunManager.Instance.NetService.Type == NetGameType.Host) return;
 
             MainFile.Logger.Info($"Received config sync from {senderId}");
-            var data = JsonSerializer.Deserialize<ConfigData>(msg.ConfigJson);
+            ConfigData? data = ConfigManager.DeserializeConfigData(msg.ConfigJson, out _);
             if (data != null)
             {
                 ConfigManager.ApplyConfig(data);
