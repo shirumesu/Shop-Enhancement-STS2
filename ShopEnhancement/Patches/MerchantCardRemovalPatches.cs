@@ -43,6 +43,7 @@ public static class MerchantCardRemovalPatches
         public int EnchantmentIndex;
         public int EnchantmentAmount;
         public int EnchantCardCount;
+        public int EnchantUsesRemaining;
         public int EnchantCost;
         public ulong GiftTargetId;
         public int GiftCardCount;
@@ -141,22 +142,23 @@ public static class MerchantCardRemovalPatches
         Player player = inventory.Player;
         EnchantmentModel enchantment = ResolveEnchantment(state.EnchantmentIndex);
         List<CardModel> availableCards = PileType.Deck.GetPile(player).Cards.Where(enchantment.CanEnchant).ToList();
-        int cardCount = Math.Min(state.EnchantCardCount, availableCards.Count);
-        int cost = ignoreCost ? 0 : ComputeEnchantCost(cardCount);
 
-        if (cardCount <= 0)
+        if (state.EnchantUsesRemaining <= 0 || availableCards.Count == 0)
         {
+            entry.SetUsed();
+            entry.OnMerchantInventoryUpdated();
             entry.InvokePurchaseFailed(PurchaseStatus.FailureForbidden);
             return false;
         }
 
+        int cost = ignoreCost ? 0 : state.EnchantCost;
         if (!ignoreCost && player.Gold < cost)
         {
             entry.InvokePurchaseFailed(PurchaseStatus.FailureGold);
             return false;
         }
 
-        CardSelectorPrefs prefs = new(CardSelectorPrefs.EnchantSelectionPrompt, cardCount)
+        CardSelectorPrefs prefs = new(CardSelectorPrefs.EnchantSelectionPrompt, 1)
         {
             Cancelable = cancelable
         };
@@ -166,8 +168,8 @@ public static class MerchantCardRemovalPatches
             prefs,
             card => enchantment.CanEnchant(card));
 
-        List<CardModel> selectedList = selectedCards.Take(cardCount).ToList();
-        if (selectedList.Count == 0)
+        CardModel? selectedCard = selectedCards.FirstOrDefault();
+        if (selectedCard == null)
         {
             return false;
         }
@@ -177,17 +179,20 @@ public static class MerchantCardRemovalPatches
             await PlayerCmd.LoseGold(cost, player, GoldLossType.Spent);
         }
 
-        foreach (CardModel selectedCard in selectedList)
+        CardCmd.Enchant(ResolveEnchantment(state.EnchantmentIndex), selectedCard, state.EnchantmentAmount);
+        var vfx = MegaCrit.Sts2.Core.Nodes.Vfx.NCardEnchantVfx.Create(selectedCard);
+        if (vfx != null)
         {
-            CardCmd.Enchant(ResolveEnchantment(state.EnchantmentIndex), selectedCard, state.EnchantmentAmount);
-            var vfx = MegaCrit.Sts2.Core.Nodes.Vfx.NCardEnchantVfx.Create(selectedCard);
-            if (vfx != null)
-            {
-                NRun.Instance?.GlobalUi.CardPreviewContainer.AddChildSafely(vfx);
-            }
+            NRun.Instance?.GlobalUi.CardPreviewContainer.AddChildSafely(vfx);
         }
 
-        entry.SetUsed();
+        state.EnchantUsesRemaining = Math.Max(0, state.EnchantUsesRemaining - 1);
+        bool hasMoreEnchantableCards = PileType.Deck.GetPile(player).Cards.Any(enchantment.CanEnchant);
+        if (state.EnchantUsesRemaining == 0 || !hasMoreEnchantableCards)
+        {
+            entry.SetUsed();
+        }
+
         await Hook.AfterItemPurchased(player.RunState, player, entry, cost);
         entry.InvokePurchaseCompleted(entry);
         return true;
@@ -382,12 +387,14 @@ public static class MerchantCardRemovalPatches
         {
             state.IsEnchantShop = false;
             state.EnchantCardCount = 0;
+            state.EnchantUsesRemaining = 0;
             state.EnchantCost = 0;
             return false;
         }
 
         state.EnchantCardCount = Math.Max(1, Math.Min(rolledCardCount, maxEnchantableCount));
-        state.EnchantCost = ComputeEnchantCost(state.EnchantCardCount);
+        state.EnchantUsesRemaining = state.EnchantCardCount;
+        state.EnchantCost = ComputeEnchantUnitCost();
         return true;
     }
 
@@ -486,10 +493,9 @@ public static class MerchantCardRemovalPatches
         return min + offset;
     }
 
-    private static int ComputeEnchantCost(int cardCount)
+    private static int ComputeEnchantUnitCost()
     {
-        int baseCost = Math.Max(0, ShopEnhancementConfig.EnchantCost);
-        return baseCost * Math.Max(1, cardCount);
+        return Math.Max(0, ShopEnhancementConfig.EnchantCost);
     }
 
     private static int ComputeGiftServiceCost(int cardCount)
@@ -591,8 +597,9 @@ public static class MerchantCardRemovalHoverTipPatches
             description = new LocString("shop_enhancement", "enchant.service_desc");
             description.Add("0", enchantName);
             description.Add("1", state.EnchantmentAmount);
-            description.Add("2", state.EnchantCardCount);
-            description.Add("3", state.EnchantCost);
+            description.Add("2", state.EnchantUsesRemaining);
+            description.Add("3", state.EnchantCardCount);
+            description.Add("4", state.EnchantCost);
         }
 
         NHoverTipSet? tipSet = NHoverTipSet.CreateAndShow(__instance, new HoverTip(title, description));
