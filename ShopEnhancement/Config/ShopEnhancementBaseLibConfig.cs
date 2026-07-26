@@ -7,174 +7,226 @@ namespace ShopEnhancement.Config;
 public class ShopEnhancementBaseLibConfig : SimpleModConfig
 {
     private const string FractionSliderFormat = "{0:0.##}";
+    private static readonly Vector2 CompactPresetButtonSize = new(168, 48);
     private static bool _syncing;
     private static RelicSellRuleSnapshot _lastRelicSellRuleSnapshot;
+    private Control? _optionContainer;
+    private VBoxContainer? _presetListContainer;
+    private RichTextLabel? _presetStatusLabel;
+
+    [ConfigHideInUI]
+    [ConfigIgnoreRestoreDefaults]
+    [ConfigTextInput(TextInputPreset.SafeDisplayName, MaxLength = 32)]
+    public static string PresetName { get; set; } = "";
 
     [ConfigSection("BasicShop")]
-    [ConfigSlider(0, 99, 1)]
-    public static int RefreshCost { get; set; } = 40;
+    [ConfigSlider(ConfigSchema.RefreshCost.Min, ConfigSchema.RefreshCost.Max, ConfigSchema.RefreshCost.Step)]
+    public static int RefreshCost { get; set; } = ConfigSchema.RefreshCost.Default;
 
-    [ConfigSlider(0, 20, 1)]
-    public static int RefreshLimitPerShop { get; set; } = 3;
+    [ConfigSlider(ConfigSchema.RefreshLimitPerShop.Min, ConfigSchema.RefreshLimitPerShop.Max, ConfigSchema.RefreshLimitPerShop.Step)]
+    public static int RefreshLimitPerShop { get; set; } = ConfigSchema.RefreshLimitPerShop.Default;
 
     [ConfigHoverTip]
-    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
+    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ConfigSchema.RelicRefreshMode.Default;
 
-    [ConfigSlider(0, 200, 1)]
+    [ConfigSlider(ConfigSchema.RemoveBaseCost.Min, ConfigSchema.RemoveBaseCost.Max, ConfigSchema.RemoveBaseCost.Step)]
     [ConfigHoverTip]
-    public static int RemoveBaseCost { get; set; } = 50;
+    public static int RemoveBaseCost { get; set; } = ConfigSchema.RemoveBaseCost.Default;
 
-    [ConfigSlider(0, 100, 1)]
-    public static int RemoveStepCost { get; set; } = 25;
+    [ConfigSlider(ConfigSchema.RemoveStepCost.Min, ConfigSchema.RemoveStepCost.Max, ConfigSchema.RemoveStepCost.Step)]
+    public static int RemoveStepCost { get; set; } = ConfigSchema.RemoveStepCost.Default;
 
-    [ConfigSlider(1, 20, 1)]
-    public static int RemoveLimitPerShop { get; set; } = 3;
+    [ConfigSlider(ConfigSchema.RemoveLimitPerShop.Min, ConfigSchema.RemoveLimitPerShop.Max, ConfigSchema.RemoveLimitPerShop.Step)]
+    public static int RemoveLimitPerShop { get; set; } = ConfigSchema.RemoveLimitPerShop.Default;
 
     [ConfigSection("ExtraFeatures")]
-    public static bool EnableNoPurchaseReward { get; set; } = true;
+    public static bool EnableNoPurchaseReward { get; set; } = ConfigSchema.EnableNoPurchaseReward.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int NoPurchaseRewardGold { get; set; } = 15;
+    [ConfigSlider(ConfigSchema.NoPurchaseRewardGold.Min, ConfigSchema.NoPurchaseRewardGold.Max, ConfigSchema.NoPurchaseRewardGold.Step)]
+    public static int NoPurchaseRewardGold { get; set; } = ConfigSchema.NoPurchaseRewardGold.Default;
 
-    public static bool EnableSkipCardRewardGold { get; set; } = true;
+    public static bool EnableSkipCardRewardGold { get; set; } = ConfigSchema.EnableSkipCardRewardGold.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int SkipCardRewardGoldAmount { get; set; } = 15;
+    [ConfigSlider(ConfigSchema.SkipCardRewardGoldAmount.Min, ConfigSchema.SkipCardRewardGoldAmount.Max, ConfigSchema.SkipCardRewardGoldAmount.Step)]
+    public static int SkipCardRewardGoldAmount { get; set; } = ConfigSchema.SkipCardRewardGoldAmount.Default;
 
-    public static bool EnableCrossClassCards { get; set; } = true;
+    public static bool EnableCrossClassCards { get; set; } = ConfigSchema.EnableCrossClassCards.Default;
 
-    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
-    public static float CrossClassCardChance { get; set; } = 0.2f;
-
-    [ConfigHoverTip]
-    public static bool EnableSellMode { get; set; } = true;
-
-    public static bool EnableSellPriceVariance { get; set; } = true;
+    [ConfigSlider(ConfigSchema.CrossClassCardChance.Min, ConfigSchema.CrossClassCardChance.Max, ConfigSchema.CrossClassCardChance.Step, Format = FractionSliderFormat)]
+    public static float CrossClassCardChance { get; set; } = ConfigSchema.CrossClassCardChance.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
-    public static float SellPriceVariance { get; set; } = 0.2f;
+    public static bool EnableSellMode { get; set; } = ConfigSchema.EnableSellMode.Default;
 
-    public static bool EnableGiftMode { get; set; } = true;
+    public static bool EnableSellPriceVariance { get; set; } = ConfigSchema.EnableSellPriceVariance.Default;
+
+    [ConfigHoverTip]
+    [ConfigSlider(ConfigSchema.SellPriceVariance.Min, ConfigSchema.SellPriceVariance.Max, ConfigSchema.SellPriceVariance.Step, Format = FractionSliderFormat)]
+    public static float SellPriceVariance { get; set; } = ConfigSchema.SellPriceVariance.Default;
+
+    public static bool EnableGiftMode { get; set; } = ConfigSchema.EnableGiftMode.Default;
 
     [ConfigSection("SellRules")]
     [ConfigHoverTip]
-    public static RelicSellPreset RelicSellRulePreset { get; set; } = RelicSellPreset.AllowAll;
+    public static RelicSellPreset RelicSellRulePreset { get; set; } = ConfigSchema.RelicSellRulePreset.Default;
 
     [ConfigHoverTip]
-    public static bool AllowStarterRelics { get; set; } = true;
+    public static bool AllowStarterRelics { get; set; } = ConfigSchema.AllowStarterRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowAncientRelics { get; set; } = true;
+    public static bool AllowAncientRelics { get; set; } = ConfigSchema.AllowAncientRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowEventRelics { get; set; } = true;
+    public static bool AllowEventRelics { get; set; } = ConfigSchema.AllowEventRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowWaxRelics { get; set; } = true;
+    public static bool AllowWaxRelics { get; set; } = ConfigSchema.AllowWaxRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowMeltedRelics { get; set; } = true;
+    public static bool AllowMeltedRelics { get; set; } = ConfigSchema.AllowMeltedRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowUsedUpRelics { get; set; } = true;
+    public static bool AllowUsedUpRelics { get; set; } = ConfigSchema.AllowUsedUpRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowUponPickupRelics { get; set; } = true;
+    public static bool AllowUponPickupRelics { get; set; } = ConfigSchema.AllowUponPickupRelics.Default;
 
     [ConfigHoverTip]
-    public static bool AllowDisabledRelics { get; set; } = true;
+    public static bool AllowDisabledRelics { get; set; } = ConfigSchema.AllowDisabledRelics.Default;
 
     [ConfigSection("SellPrices")]
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellCommonRelicPrice { get; set; } = 70;
+    [ConfigSlider(ConfigSchema.SellCommonRelicPrice.Min, ConfigSchema.SellCommonRelicPrice.Max, ConfigSchema.SellCommonRelicPrice.Step)]
+    public static int SellCommonRelicPrice { get; set; } = ConfigSchema.SellCommonRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellUncommonRelicPrice { get; set; } = 90;
+    [ConfigSlider(ConfigSchema.SellUncommonRelicPrice.Min, ConfigSchema.SellUncommonRelicPrice.Max, ConfigSchema.SellUncommonRelicPrice.Step)]
+    public static int SellUncommonRelicPrice { get; set; } = ConfigSchema.SellUncommonRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellRareRelicPrice { get; set; } = 110;
+    [ConfigSlider(ConfigSchema.SellRareRelicPrice.Min, ConfigSchema.SellRareRelicPrice.Max, ConfigSchema.SellRareRelicPrice.Step)]
+    public static int SellRareRelicPrice { get; set; } = ConfigSchema.SellRareRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellShopRelicPrice { get; set; } = 80;
+    [ConfigSlider(ConfigSchema.SellShopRelicPrice.Min, ConfigSchema.SellShopRelicPrice.Max, ConfigSchema.SellShopRelicPrice.Step)]
+    public static int SellShopRelicPrice { get; set; } = ConfigSchema.SellShopRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellAncientRelicPrice { get; set; } = 240;
+    [ConfigSlider(ConfigSchema.SellAncientRelicPrice.Min, ConfigSchema.SellAncientRelicPrice.Max, ConfigSchema.SellAncientRelicPrice.Step)]
+    public static int SellAncientRelicPrice { get; set; } = ConfigSchema.SellAncientRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellStarterRelicPrice { get; set; } = 240;
+    [ConfigSlider(ConfigSchema.SellStarterRelicPrice.Min, ConfigSchema.SellStarterRelicPrice.Max, ConfigSchema.SellStarterRelicPrice.Step)]
+    public static int SellStarterRelicPrice { get; set; } = ConfigSchema.SellStarterRelicPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellEventRelicPrice { get; set; } = 80;
+    [ConfigSlider(ConfigSchema.SellEventRelicPrice.Min, ConfigSchema.SellEventRelicPrice.Max, ConfigSchema.SellEventRelicPrice.Step)]
+    public static int SellEventRelicPrice { get; set; } = ConfigSchema.SellEventRelicPrice.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int SellRelicMinGold { get; set; } = 30;
-
-    [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellCommonPotionPrice { get; set; } = 20;
+    [ConfigSlider(ConfigSchema.SellRelicMinGold.Min, ConfigSchema.SellRelicMinGold.Max, ConfigSchema.SellRelicMinGold.Step)]
+    public static int SellRelicMinGold { get; set; } = ConfigSchema.SellRelicMinGold.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellUncommonPotionPrice { get; set; } = 30;
+    [ConfigSlider(ConfigSchema.SellCommonPotionPrice.Min, ConfigSchema.SellCommonPotionPrice.Max, ConfigSchema.SellCommonPotionPrice.Step)]
+    public static int SellCommonPotionPrice { get; set; } = ConfigSchema.SellCommonPotionPrice.Default;
 
     [ConfigHoverTip]
-    [ConfigSlider(0, 999, 1)]
-    public static int SellRarePotionPrice { get; set; } = 40;
+    [ConfigSlider(ConfigSchema.SellUncommonPotionPrice.Min, ConfigSchema.SellUncommonPotionPrice.Max, ConfigSchema.SellUncommonPotionPrice.Step)]
+    public static int SellUncommonPotionPrice { get; set; } = ConfigSchema.SellUncommonPotionPrice.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int SellPotionMinGold { get; set; } = 15;
+    [ConfigHoverTip]
+    [ConfigSlider(ConfigSchema.SellRarePotionPrice.Min, ConfigSchema.SellRarePotionPrice.Max, ConfigSchema.SellRarePotionPrice.Step)]
+    public static int SellRarePotionPrice { get; set; } = ConfigSchema.SellRarePotionPrice.Default;
+
+    [ConfigSlider(ConfigSchema.SellPotionMinGold.Min, ConfigSchema.SellPotionMinGold.Max, ConfigSchema.SellPotionMinGold.Step)]
+    public static int SellPotionMinGold { get; set; } = ConfigSchema.SellPotionMinGold.Default;
 
     [ConfigSection("Enchant")]
-    public static bool EnableRemovalEnchantRandom { get; set; } = true;
+    public static bool EnableRemovalEnchantRandom { get; set; } = ConfigSchema.EnableRemovalEnchantRandom.Default;
 
-    public static bool EnableEnchantService { get; set; } = true;
+    public static bool EnableEnchantService { get; set; } = ConfigSchema.EnableEnchantService.Default;
 
-    [ConfigSlider(1, 10, 1)]
-    public static int EnchantStartShopVisit { get; set; } = 4;
+    [ConfigSlider(ConfigSchema.EnchantStartShopVisit.Min, ConfigSchema.EnchantStartShopVisit.Max, ConfigSchema.EnchantStartShopVisit.Step)]
+    public static int EnchantStartShopVisit { get; set; } = ConfigSchema.EnchantStartShopVisit.Default;
 
-    [ConfigSlider(0, 1, 0.01, Format = FractionSliderFormat)]
-    public static float EnchantReplaceChance { get; set; } = 0.3f;
+    [ConfigSlider(ConfigSchema.EnchantReplaceChance.Min, ConfigSchema.EnchantReplaceChance.Max, ConfigSchema.EnchantReplaceChance.Step, Format = FractionSliderFormat)]
+    public static float EnchantReplaceChance { get; set; } = ConfigSchema.EnchantReplaceChance.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int EnchantCost { get; set; } = 105;
+    [ConfigSlider(ConfigSchema.EnchantCost.Min, ConfigSchema.EnchantCost.Max, ConfigSchema.EnchantCost.Step)]
+    public static int EnchantCost { get; set; } = ConfigSchema.EnchantCost.Default;
 
-    [ConfigSlider(1, 999, 1)]
-    public static int EnchantAmountMin { get; set; } = 1;
+    [ConfigSlider(ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step)]
+    public static int EnchantAmountMin { get; set; } = ConfigSchema.EnchantAmount.DefaultMin;
 
-    [ConfigSlider(1, 999, 1)]
-    public static int EnchantAmountMax { get; set; } = 2;
+    [ConfigSlider(ConfigSchema.EnchantAmount.Min, ConfigSchema.EnchantAmount.Max, ConfigSchema.EnchantAmount.Step)]
+    public static int EnchantAmountMax { get; set; } = ConfigSchema.EnchantAmount.DefaultMax;
 
-    [ConfigSlider(1, 20, 1)]
-    public static int EnchantCardCountMin { get; set; } = 1;
+    [ConfigSlider(ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step)]
+    public static int EnchantCardCountMin { get; set; } = ConfigSchema.EnchantCardCount.DefaultMin;
 
-    [ConfigSlider(1, 20, 1)]
-    public static int EnchantCardCountMax { get; set; } = 2;
+    [ConfigSlider(ConfigSchema.EnchantCardCount.Min, ConfigSchema.EnchantCardCount.Max, ConfigSchema.EnchantCardCount.Step)]
+    public static int EnchantCardCountMax { get; set; } = ConfigSchema.EnchantCardCount.DefaultMax;
 
-    public static bool EnableRandomTeammateGiftService { get; set; } = true;
+    public static bool EnableRandomTeammateGiftService { get; set; } = ConfigSchema.EnableRandomTeammateGiftService.Default;
 
-    [ConfigSlider(1, 20, 1)]
-    public static int GiftServiceCardCountMin { get; set; } = 1;
+    [ConfigSlider(ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step)]
+    public static int GiftServiceCardCountMin { get; set; } = ConfigSchema.GiftServiceCardCount.DefaultMin;
 
-    [ConfigSlider(1, 20, 1)]
-    public static int GiftServiceCardCountMax { get; set; } = 1;
+    [ConfigSlider(ConfigSchema.GiftServiceCardCount.Min, ConfigSchema.GiftServiceCardCount.Max, ConfigSchema.GiftServiceCardCount.Step)]
+    public static int GiftServiceCardCountMax { get; set; } = ConfigSchema.GiftServiceCardCount.DefaultMax;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int GiftServiceBaseCost { get; set; } = 85;
+    [ConfigSlider(ConfigSchema.GiftServiceBaseCost.Min, ConfigSchema.GiftServiceBaseCost.Max, ConfigSchema.GiftServiceBaseCost.Step)]
+    public static int GiftServiceBaseCost { get; set; } = ConfigSchema.GiftServiceBaseCost.Default;
 
-    [ConfigSlider(0, 999, 1)]
-    public static int GiftServiceStepCost { get; set; } = 55;
+    [ConfigSlider(ConfigSchema.GiftServiceStepCost.Min, ConfigSchema.GiftServiceStepCost.Max, ConfigSchema.GiftServiceStepCost.Step)]
+    public static int GiftServiceStepCost { get; set; } = ConfigSchema.GiftServiceStepCost.Default;
 
     public override void SetupConfigUI(Control optionContainer)
     {
         base.SetupConfigUI(optionContainer);
+
+        _optionContainer = optionContainer;
+        NConfigCollapsibleSection presetSection = CreateCollapsibleSection(
+            "Presets",
+            collapsedByDefault: true);
+        Control presetContent = presetSection.ContentContainer;
+
+        var presetNameProperty = typeof(ShopEnhancementBaseLibConfig).GetProperty(nameof(PresetName));
+        if (presetNameProperty != null)
+        {
+            presetContent.AddChild(CreateLineEditOption(presetNameProperty));
+        }
+
+        presetContent.AddChild(CreateButton(
+            "PresetActions",
+            "SavePreset",
+            SaveCurrentPreset));
+
+        _presetStatusLabel = CreateRawLabelControl("", 24);
+        _presetStatusLabel.CustomMinimumSize = new Vector2(0, 40);
+        _presetStatusLabel.Visible = false;
+        presetContent.AddChild(_presetStatusLabel);
+
+        presetContent.AddChild(CreateSectionHeader(
+            "SavedPresets",
+            alignToTop: false,
+            centered: false));
+
+        _presetListContainer = new VBoxContainer
+        {
+            Name = "PresetList"
+        };
+        presetContent.AddChild(_presetListContainer);
+
+        optionContainer.AddChild(presetSection);
+        optionContainer.MoveChild(presetSection, 0);
+        RefreshPresetList();
+
+        Control? resetContainer = optionContainer.GetNodeOrNull<Control>("ResetDefaultsButtonContainer");
+        if (resetContainer != null)
+        {
+            optionContainer.MoveChild(resetContainer, -1);
+        }
 
         foreach (Node child in optionContainer.GetChildren())
         {
@@ -183,10 +235,197 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
                 section.IsExpanded = section.Name.ToString() == "CollapsibleSection_BasicShop";
             }
         }
+
+        SetupFocusNeighbors(optionContainer);
+    }
+
+    private void SaveCurrentPreset()
+    {
+        PresetOperationResult result = ConfigManager.SavePreset(
+            PresetName,
+            ToConfigData(),
+            out string normalizedName);
+
+        if (result == PresetOperationResult.Success)
+        {
+            try
+            {
+                _syncing = true;
+                PresetName = normalizedName;
+                SaveDebounced(0);
+                ConfigReloaded();
+            }
+            finally
+            {
+                _syncing = false;
+            }
+
+            SetPresetStatus("PresetStatusSaved");
+            RefreshPresetList();
+            return;
+        }
+
+        SetPresetStatus(GetPresetErrorLabel(result));
+    }
+
+    private void LoadPresetFromUi(string presetName)
+    {
+        PresetOperationResult result = ConfigManager.LoadPreset(presetName, out ConfigData? data);
+        if (result != PresetOperationResult.Success || data == null)
+        {
+            SetPresetStatus(GetPresetErrorLabel(result));
+            return;
+        }
+
+        try
+        {
+            _syncing = true;
+            CopyFromConfigData(data);
+            NormalizeRelicSellRuleSettings();
+            ConfigManager.Save(ToConfigData());
+            CopyFromRuntimeConfig();
+            PresetName = presetName;
+            _lastRelicSellRuleSnapshot = CaptureRelicSellRuleSnapshot();
+            SaveDebounced(0);
+            ConfigReloaded();
+        }
+        finally
+        {
+            _syncing = false;
+        }
+
+        SetPresetStatus("PresetStatusLoaded");
+    }
+
+    private void DeletePresetFromUi(string presetName)
+    {
+        PresetOperationResult result = ConfigManager.DeletePreset(presetName);
+        if (result != PresetOperationResult.Success)
+        {
+            SetPresetStatus(GetPresetErrorLabel(result));
+            return;
+        }
+
+        SetPresetStatus("PresetStatusDeleted");
+        RefreshPresetList();
+    }
+
+    private void RefreshPresetList()
+    {
+        if (_presetListContainer == null)
+        {
+            return;
+        }
+
+        foreach (Node child in _presetListContainer.GetChildren())
+        {
+            _presetListContainer.RemoveChild(child);
+            child.QueueFree();
+        }
+
+        var presets = ConfigManager.GetPresets();
+        if (presets.Count == 0)
+        {
+            RichTextLabel emptyLabel = CreateRawLabelControl(GetLabelText("NoPresets"), 24);
+            emptyLabel.CustomMinimumSize = new Vector2(0, 40);
+            _presetListContainer.AddChild(emptyLabel);
+        }
+        else
+        {
+            for (int index = 0; index < presets.Count; index++)
+            {
+                string presetName = presets[index];
+                NConfigButton loadButton = CreateRawButtonControl(
+                    GetLabelText("LoadPreset"),
+                    () => LoadPresetFromUi(presetName));
+                NConfigButton deleteButton = CreateRawButtonControl(
+                    GetLabelText("DeletePreset"),
+                    () => DeletePresetFromUi(presetName));
+                MakePresetButtonCompact(loadButton);
+                MakePresetButtonCompact(deleteButton);
+
+                HBoxContainer actions = new()
+                {
+                    SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd,
+                    SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
+                };
+                actions.AddThemeConstantOverride("separation", 8);
+                actions.AddChild(loadButton);
+                actions.AddChild(deleteButton);
+
+                RichTextLabel nameLabel = CreateRawLabelControl(presetName, 28);
+                nameLabel.CustomMinimumSize = new Vector2(0, 64);
+                nameLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+
+                HBoxContainer rowContent = new();
+                rowContent.AddThemeConstantOverride("separation", 12);
+                rowContent.AddChild(nameLabel);
+                rowContent.AddChild(actions);
+
+                MarginContainer row = new()
+                {
+                    Name = $"PresetEntry{index}",
+                    CustomMinimumSize = new Vector2(0, 64)
+                };
+                row.AddThemeConstantOverride("margin_left", 12);
+                row.AddThemeConstantOverride("margin_right", 12);
+                row.AddChild(rowContent);
+                _presetListContainer.AddChild(row);
+            }
+        }
+
+        if (_optionContainer != null)
+        {
+            SetupFocusNeighbors(_optionContainer);
+        }
+    }
+
+    private static void MakePresetButtonCompact(NConfigButton button)
+    {
+        button.CustomMinimumSize = CompactPresetButtonSize;
+        button.SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd;
+        button.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+
+        TextureRect? image = button.GetNodeOrNull<TextureRect>("Image");
+        if (image != null)
+        {
+            image.CustomMinimumSize = new Vector2(48, 48);
+        }
+
+        Label? label = button.GetNodeOrNull<Label>("Label");
+        if (label?.LabelSettings != null)
+        {
+            label.LabelSettings.FontSize = 22;
+            label.LabelSettings.OutlineSize = 8;
+        }
+    }
+
+    private void SetPresetStatus(string labelName)
+    {
+        if (_presetStatusLabel == null)
+        {
+            return;
+        }
+
+        _presetStatusLabel.Text = GetLabelText(labelName);
+        _presetStatusLabel.Visible = true;
+    }
+
+    private static string GetPresetErrorLabel(PresetOperationResult result)
+    {
+        return result switch
+        {
+            PresetOperationResult.EmptyName => "PresetStatusEmptyName",
+            PresetOperationResult.InvalidName => "PresetStatusInvalidName",
+            PresetOperationResult.NotFound => "PresetStatusNotFound",
+            PresetOperationResult.InvalidData => "PresetStatusInvalidData",
+            _ => "PresetStatusFailed"
+        };
     }
 
     public static void Register(string modId)
     {
+        ConfigSchema.Validate();
         ConfigData currentConfig = ConfigManager.GetCurrentConfig();
         CopyFromConfigData(new ConfigData());
 

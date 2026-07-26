@@ -6,14 +6,24 @@ using Godot;
 
 namespace ShopEnhancement.Config;
 
+public enum PresetOperationResult
+{
+    Success,
+    EmptyName,
+    InvalidName,
+    NotFound,
+    InvalidData,
+    Failed
+}
+
 public static class ConfigManager
 {
     private const string ConfigDirName = "ShopEnhancement";
     private const string PresetsDirName = "Presets";
     private const string ConfigFileName = "config.json";
+    private const int MaxPresetNameLength = 32;
     private const float LegacyRelicPriceRatioDefault = 0.35f;
     private const float LegacyPotionPriceRatioDefault = 0.25f;
-    private const float DefaultSellPriceVariance = 0.2f;
     private const int LegacyCommonRelicBasePrice = 175;
     private const int LegacyUncommonRelicBasePrice = 225;
     private const int LegacyRareRelicBasePrice = 275;
@@ -95,8 +105,14 @@ public static class ConfigManager
         {
             foreach (string file in Directory.GetFiles(PresetsDir, "*.json"))
             {
-                presets.Add(Path.GetFileNameWithoutExtension(file));
+                string name = Path.GetFileNameWithoutExtension(file);
+                if (TryNormalizePresetName(name, out string normalizedName) && name == normalizedName)
+                {
+                    presets.Add(name);
+                }
             }
+
+            presets.Sort(StringComparer.OrdinalIgnoreCase);
         }
         catch (Exception ex)
         {
@@ -105,45 +121,171 @@ public static class ConfigManager
         return presets;
     }
 
-    public static void SavePreset(string name, ConfigData data)
+    public static PresetOperationResult SavePreset(string name, ConfigData data, out string normalizedName)
     {
+        normalizedName = "";
+        if (!TryNormalizePresetName(name, out normalizedName))
+        {
+            return string.IsNullOrWhiteSpace(name)
+                ? PresetOperationResult.EmptyName
+                : PresetOperationResult.InvalidName;
+        }
+
         EnsureDirectories();
+        string? existingPath = FindPresetPath(normalizedName);
+        string path = existingPath ?? Path.Combine(PresetsDir, $"{normalizedName}.json");
+        if (existingPath != null)
+        {
+            normalizedName = Path.GetFileNameWithoutExtension(existingPath);
+        }
+        string tempPath = $"{path}.tmp";
+
         try
         {
-            string path = Path.Combine(PresetsDir, $"{name}.json");
             string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(path, json);
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, path, true);
+            return PresetOperationResult.Success;
         }
         catch (Exception ex)
         {
-            MainFile.Logger.Error($"Failed to save preset '{name}': {ex}");
+            MainFile.Logger.Error($"Failed to save preset '{normalizedName}': {ex}");
+            return PresetOperationResult.Failed;
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch
+            {
+            }
         }
     }
 
-    public static void LoadPreset(string name)
+    public static PresetOperationResult LoadPreset(string name, out ConfigData? data)
     {
+        data = null;
+        if (!TryNormalizePresetName(name, out string normalizedName))
+        {
+            return string.IsNullOrWhiteSpace(name)
+                ? PresetOperationResult.EmptyName
+                : PresetOperationResult.InvalidName;
+        }
+
         EnsureDirectories();
+        string? path = FindPresetPath(normalizedName);
+        if (path == null)
+        {
+            return PresetOperationResult.NotFound;
+        }
+
         try
         {
-            string path = Path.Combine(PresetsDir, $"{name}.json");
-            if (!File.Exists(path)) return;
-
             string json = File.ReadAllText(path);
-            ConfigData? data = DeserializeConfigData(json, out bool migrated);
-            if (data != null)
+            data = DeserializeConfigData(json, out bool migrated);
+            if (data == null)
             {
-                if (migrated)
-                {
-                    MainFile.Logger.Info($"Migrated legacy sell-mode config from preset '{name}'.");
-                }
-
-                Save(data); // Save as current config
+                return PresetOperationResult.InvalidData;
             }
+
+            if (migrated)
+            {
+                MainFile.Logger.Info($"Migrated legacy sell-mode config from preset '{normalizedName}'.");
+            }
+
+            return PresetOperationResult.Success;
+        }
+        catch (JsonException ex)
+        {
+            MainFile.Logger.Error($"Failed to parse preset '{normalizedName}': {ex}");
+            return PresetOperationResult.InvalidData;
         }
         catch (Exception ex)
         {
-            MainFile.Logger.Error($"Failed to load preset '{name}': {ex}");
+            MainFile.Logger.Error($"Failed to load preset '{normalizedName}': {ex}");
+            return PresetOperationResult.Failed;
         }
+    }
+
+    public static PresetOperationResult DeletePreset(string name)
+    {
+        if (!TryNormalizePresetName(name, out string normalizedName))
+        {
+            return string.IsNullOrWhiteSpace(name)
+                ? PresetOperationResult.EmptyName
+                : PresetOperationResult.InvalidName;
+        }
+
+        EnsureDirectories();
+        string? path = FindPresetPath(normalizedName);
+        if (path == null)
+        {
+            return PresetOperationResult.NotFound;
+        }
+
+        try
+        {
+            File.Delete(path);
+            return PresetOperationResult.Success;
+        }
+        catch (Exception ex)
+        {
+            MainFile.Logger.Error($"Failed to delete preset '{normalizedName}': {ex}");
+            return PresetOperationResult.Failed;
+        }
+    }
+
+    private static string? FindPresetPath(string normalizedName)
+    {
+        foreach (string file in Directory.GetFiles(PresetsDir, "*.json"))
+        {
+            string existingName = Path.GetFileNameWithoutExtension(file);
+            if (string.Equals(existingName, normalizedName, StringComparison.OrdinalIgnoreCase))
+            {
+                return file;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryNormalizePresetName(string? name, out string normalizedName)
+    {
+        normalizedName = name?.Trim() ?? "";
+        if (normalizedName.Length == 0 || normalizedName.Length > MaxPresetNameLength)
+        {
+            return false;
+        }
+
+        foreach (char character in normalizedName)
+        {
+            if (!char.IsLetterOrDigit(character)
+                && character != '_'
+                && character != '-'
+                && character != ' ')
+            {
+                return false;
+            }
+        }
+
+        string upperName = normalizedName.ToUpperInvariant();
+        if (upperName is "CON" or "PRN" or "AUX" or "NUL"
+            || (upperName.Length == 4
+                && (upperName.StartsWith("COM", StringComparison.Ordinal)
+                    || upperName.StartsWith("LPT", StringComparison.Ordinal))
+                && upperName[3] is >= '1' and <= '9'))
+        {
+            return false;
+        }
+
+        string fullPath = Path.GetFullPath(Path.Combine(PresetsDir, $"{normalizedName}.json"));
+        string fullPresetsDir = Path.GetFullPath(PresetsDir) + Path.DirectorySeparatorChar;
+        return fullPath.StartsWith(fullPresetsDir, StringComparison.OrdinalIgnoreCase);
     }
 
     public static ConfigData GetCurrentConfig()
@@ -205,12 +347,12 @@ public static class ConfigManager
     {
         ShopEnhancementConfig.RemoveBaseCost = data.RemoveBaseCost;
         ShopEnhancementConfig.RemoveStepCost = data.RemoveStepCost;
-        ShopEnhancementConfig.RemoveLimitPerShop = Math.Max(1, data.RemoveLimitPerShop);
+        ShopEnhancementConfig.RemoveLimitPerShop = Math.Max(ConfigSchema.RemoveLimitPerShop.Min, data.RemoveLimitPerShop);
         ShopEnhancementConfig.RefreshCost = data.RefreshCost;
         ShopEnhancementConfig.RefreshLimitPerShop = data.RefreshLimitPerShop;
         ShopEnhancementConfig.RelicRefreshMode = Enum.IsDefined(data.RelicRefreshMode)
             ? data.RelicRefreshMode
-            : ShopRelicRefreshMode.Queue;
+            : ConfigSchema.RelicRefreshMode.Default;
         ShopEnhancementConfig.EnableNoPurchaseReward = data.EnableNoPurchaseReward;
         ShopEnhancementConfig.NoPurchaseRewardGold = data.NoPurchaseRewardGold;
         ShopEnhancementConfig.EnableSkipCardRewardGold = data.EnableSkipCardRewardGold;
@@ -219,11 +361,14 @@ public static class ConfigManager
         ShopEnhancementConfig.CrossClassCardChance = data.CrossClassCardChance;
         ShopEnhancementConfig.EnableSellMode = data.EnableSellMode;
         ShopEnhancementConfig.EnableSellPriceVariance = data.EnableSellPriceVariance;
-        ShopEnhancementConfig.SellPriceVariance = Math.Clamp(data.SellPriceVariance, 0f, 1f);
+        ShopEnhancementConfig.SellPriceVariance = Math.Clamp(
+            data.SellPriceVariance,
+            (float)ConfigSchema.SellPriceVariance.Min,
+            (float)ConfigSchema.SellPriceVariance.Max);
         ShopEnhancementConfig.EnableGiftMode = data.EnableGiftMode;
         ShopEnhancementConfig.RelicSellRulePreset = Enum.IsDefined(data.RelicSellRulePreset)
             ? data.RelicSellRulePreset
-            : RelicSellPreset.AllowAll;
+            : ConfigSchema.RelicSellRulePreset.Default;
         ShopEnhancementConfig.AllowUsedUpRelics = data.AllowUsedUpRelics;
         ShopEnhancementConfig.AllowUponPickupRelics = data.AllowUponPickupRelics;
         ShopEnhancementConfig.AllowWaxRelics = data.AllowWaxRelics;
@@ -232,29 +377,38 @@ public static class ConfigManager
         ShopEnhancementConfig.AllowStarterRelics = data.AllowStarterRelics;
         ShopEnhancementConfig.AllowAncientRelics = data.AllowAncientRelics;
         ShopEnhancementConfig.AllowEventRelics = data.AllowEventRelics;
-        ShopEnhancementConfig.SellCommonRelicPrice = Math.Max(0, data.SellCommonRelicPrice);
-        ShopEnhancementConfig.SellUncommonRelicPrice = Math.Max(0, data.SellUncommonRelicPrice);
-        ShopEnhancementConfig.SellRareRelicPrice = Math.Max(0, data.SellRareRelicPrice);
-        ShopEnhancementConfig.SellShopRelicPrice = Math.Max(0, data.SellShopRelicPrice);
-        ShopEnhancementConfig.SellAncientRelicPrice = Math.Max(0, data.SellAncientRelicPrice);
-        ShopEnhancementConfig.SellStarterRelicPrice = Math.Max(0, data.SellStarterRelicPrice);
-        ShopEnhancementConfig.SellEventRelicPrice = Math.Max(0, data.SellEventRelicPrice);
-        ShopEnhancementConfig.SellRelicMinGold = Math.Max(0, data.SellRelicMinGold);
-        ShopEnhancementConfig.SellCommonPotionPrice = Math.Max(0, data.SellCommonPotionPrice);
-        ShopEnhancementConfig.SellUncommonPotionPrice = Math.Max(0, data.SellUncommonPotionPrice);
-        ShopEnhancementConfig.SellRarePotionPrice = Math.Max(0, data.SellRarePotionPrice);
-        ShopEnhancementConfig.SellPotionMinGold = Math.Max(0, data.SellPotionMinGold);
+        ShopEnhancementConfig.SellCommonRelicPrice = Math.Max(ConfigSchema.SellCommonRelicPrice.Min, data.SellCommonRelicPrice);
+        ShopEnhancementConfig.SellUncommonRelicPrice = Math.Max(ConfigSchema.SellUncommonRelicPrice.Min, data.SellUncommonRelicPrice);
+        ShopEnhancementConfig.SellRareRelicPrice = Math.Max(ConfigSchema.SellRareRelicPrice.Min, data.SellRareRelicPrice);
+        ShopEnhancementConfig.SellShopRelicPrice = Math.Max(ConfigSchema.SellShopRelicPrice.Min, data.SellShopRelicPrice);
+        ShopEnhancementConfig.SellAncientRelicPrice = Math.Max(ConfigSchema.SellAncientRelicPrice.Min, data.SellAncientRelicPrice);
+        ShopEnhancementConfig.SellStarterRelicPrice = Math.Max(ConfigSchema.SellStarterRelicPrice.Min, data.SellStarterRelicPrice);
+        ShopEnhancementConfig.SellEventRelicPrice = Math.Max(ConfigSchema.SellEventRelicPrice.Min, data.SellEventRelicPrice);
+        ShopEnhancementConfig.SellRelicMinGold = Math.Max(ConfigSchema.SellRelicMinGold.Min, data.SellRelicMinGold);
+        ShopEnhancementConfig.SellCommonPotionPrice = Math.Max(ConfigSchema.SellCommonPotionPrice.Min, data.SellCommonPotionPrice);
+        ShopEnhancementConfig.SellUncommonPotionPrice = Math.Max(ConfigSchema.SellUncommonPotionPrice.Min, data.SellUncommonPotionPrice);
+        ShopEnhancementConfig.SellRarePotionPrice = Math.Max(ConfigSchema.SellRarePotionPrice.Min, data.SellRarePotionPrice);
+        ShopEnhancementConfig.SellPotionMinGold = Math.Max(ConfigSchema.SellPotionMinGold.Min, data.SellPotionMinGold);
         ShopEnhancementConfig.EnableRemovalEnchantRandom = data.EnableRemovalEnchantRandom;
         ShopEnhancementConfig.EnableEnchantService = data.EnableEnchantService;
         ShopEnhancementConfig.EnchantStartShopVisit = data.EnchantStartShopVisit;
         ShopEnhancementConfig.EnchantReplaceChance = data.EnchantReplaceChance;
         ShopEnhancementConfig.EnchantCost = data.EnchantCost;
-        ShopEnhancementConfig.EnchantAmountRange = NormalizeRange(data.EnchantAmountRange, 1, 999);
-        ShopEnhancementConfig.EnchantCardCountRange = NormalizeRange(data.EnchantCardCountRange, 1, 20);
+        ShopEnhancementConfig.EnchantAmountRange = NormalizeRange(
+            data.EnchantAmountRange,
+            ConfigSchema.EnchantAmount.Min,
+            ConfigSchema.EnchantAmount.Max);
+        ShopEnhancementConfig.EnchantCardCountRange = NormalizeRange(
+            data.EnchantCardCountRange,
+            ConfigSchema.EnchantCardCount.Min,
+            ConfigSchema.EnchantCardCount.Max);
         ShopEnhancementConfig.EnableRandomTeammateGiftService = data.EnableRandomTeammateGiftService;
-        ShopEnhancementConfig.GiftServiceCardCountRange = NormalizeRange(data.GiftServiceCardCountRange, 1, 20);
-        ShopEnhancementConfig.GiftServiceBaseCost = Math.Max(0, data.GiftServiceBaseCost);
-        ShopEnhancementConfig.GiftServiceStepCost = Math.Max(0, data.GiftServiceStepCost);
+        ShopEnhancementConfig.GiftServiceCardCountRange = NormalizeRange(
+            data.GiftServiceCardCountRange,
+            ConfigSchema.GiftServiceCardCount.Min,
+            ConfigSchema.GiftServiceCardCount.Max);
+        ShopEnhancementConfig.GiftServiceBaseCost = Math.Max(ConfigSchema.GiftServiceBaseCost.Min, data.GiftServiceBaseCost);
+        ShopEnhancementConfig.GiftServiceStepCost = Math.Max(ConfigSchema.GiftServiceStepCost.Min, data.GiftServiceStepCost);
     }
 
     private static ConfigData? DeserializeConfigData(string json, out bool migrated)
@@ -299,7 +453,7 @@ public static class ConfigManager
         data.SellUncommonPotionPrice = LegacySellPrice(LegacyUncommonPotionBasePrice, potionRatio, data.SellPotionMinGold);
         data.SellRarePotionPrice = LegacySellPrice(LegacyRarePotionBasePrice, potionRatio, data.SellPotionMinGold);
         data.EnableSellPriceVariance = false;
-        data.SellPriceVariance = DefaultSellPriceVariance;
+        data.SellPriceVariance = ConfigSchema.SellPriceVariance.Default;
 
         return true;
     }
@@ -323,7 +477,7 @@ public static class ConfigManager
         float potionVariance = hasPotionVariance ? GetFloat(root, "SellPotionPriceVariance", 0f) : 0f;
         float variance = Math.Clamp(Math.Max(relicVariance, potionVariance), 0f, 1f);
         data.EnableSellPriceVariance = variance > 0f;
-        data.SellPriceVariance = variance > 0f ? variance : DefaultSellPriceVariance;
+        data.SellPriceVariance = variance > 0f ? variance : ConfigSchema.SellPriceVariance.Default;
         return true;
     }
 

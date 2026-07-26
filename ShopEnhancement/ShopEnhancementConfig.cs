@@ -6,65 +6,71 @@ namespace ShopEnhancement;
 public static class ShopEnhancementConfig
 {
     // Requirement 1: Modify card removal cost
-    public static int RemoveBaseCost { get; set; } = 50; // Base cost for the first removal. 50 is cheaper than vanilla (75) to encourage deck thinning, but not free.
-    public static int RemoveStepCost { get; set; } = 25; // Increase per removal. Standard scaling.
+    public static int RemoveBaseCost { get; set; } = ConfigSchema.RemoveBaseCost.Default;
+    public static int RemoveStepCost { get; set; } = ConfigSchema.RemoveStepCost.Default;
 
     // Requirement 2: Modify card removal limit
-    public static int RemoveLimitPerShop { get; set; } = 3; // 3 removals allow for aggressive thinning if you have the gold (50+75+100=225g).
+    public static int RemoveLimitPerShop { get; set; } = ConfigSchema.RemoveLimitPerShop.Default;
 
     // Requirement 3: Refresh shop
-    public static int RefreshCost { get; set; } = 40; // 10 was too cheap. 40 makes it a tactical decision.
-    public static int RefreshLimitPerShop { get; set; } = 3; // Limit to 3 to prevent infinite digging/breaking the game loop.
-    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ShopRelicRefreshMode.Queue;
+    public static int RefreshCost { get; set; } = ConfigSchema.RefreshCost.Default;
+    public static int RefreshLimitPerShop { get; set; } = ConfigSchema.RefreshLimitPerShop.Default;
+    public static ShopRelicRefreshMode RelicRefreshMode { get; set; } = ConfigSchema.RelicRefreshMode.Default;
 
     // Requirement 4: No Purchase Reward
-    public static bool EnableNoPurchaseReward { get; set; } = true;
-    public static int NoPurchaseRewardGold { get; set; } = 15; // 25 was a bit high. 15 is a nice consolation for a bad shop.
+    public static bool EnableNoPurchaseReward { get; set; } = ConfigSchema.EnableNoPurchaseReward.Default;
+    public static int NoPurchaseRewardGold { get; set; } = ConfigSchema.NoPurchaseRewardGold.Default;
 
     // Requirement 5: Skip Card Reward Gold
-    public static bool EnableSkipCardRewardGold { get; set; } = true;
-    public static int SkipCardRewardGoldAmount { get; set; } = 15; // 15g is a fair trade for skipping a card power spike.
+    public static bool EnableSkipCardRewardGold { get; set; } = ConfigSchema.EnableSkipCardRewardGold.Default;
+    public static int SkipCardRewardGoldAmount { get; set; } = ConfigSchema.SkipCardRewardGoldAmount.Default;
 
     // Requirement 6: Cross Class Cards
-    public static bool EnableCrossClassCards { get; set; } = true;
-    public static float CrossClassCardChance { get; set; } = 0.2f; // 20% chance per card. 100% (1f) is too chaotic. 20% adds spice without diluting class identity.
+    public static bool EnableCrossClassCards { get; set; } = ConfigSchema.EnableCrossClassCards.Default;
+    public static float CrossClassCardChance { get; set; } = ConfigSchema.CrossClassCardChance.Default;
 
-    public static bool EnableSellMode { get; set; } = true;
-    public static bool EnableSellPriceVariance { get; set; } = true;
-    public static float SellPriceVariance { get; set; } = 0.2f;
-    public static bool EnableGiftMode { get; set; } = true;
+    public static bool EnableSellMode { get; set; } = ConfigSchema.EnableSellMode.Default;
+    public static bool EnableSellPriceVariance { get; set; } = ConfigSchema.EnableSellPriceVariance.Default;
+    public static float SellPriceVariance { get; set; } = ConfigSchema.SellPriceVariance.Default;
+    public static bool EnableGiftMode { get; set; } = ConfigSchema.EnableGiftMode.Default;
 
-    public static RelicSellPreset RelicSellRulePreset { get; set; } = RelicSellPreset.AllowAll;
-    public static bool AllowUsedUpRelics { get; set; } = true;
-    public static bool AllowUponPickupRelics { get; set; } = true;
-    public static bool AllowWaxRelics { get; set; } = true;
-    public static bool AllowMeltedRelics { get; set; } = true;
-    public static bool AllowDisabledRelics { get; set; } = true;
-    public static bool AllowStarterRelics { get; set; } = true;
-    public static bool AllowAncientRelics { get; set; } = true;
-    public static bool AllowEventRelics { get; set; } = true;
-    public static int SellCommonRelicPrice { get; set; } = 70;
-    public static int SellUncommonRelicPrice { get; set; } = 90;
-    public static int SellRareRelicPrice { get; set; } = 110;
-    public static int SellShopRelicPrice { get; set; } = 80;
-    public static int SellAncientRelicPrice { get; set; } = 240;
-    public static int SellStarterRelicPrice { get; set; } = 240;
-    public static int SellEventRelicPrice { get; set; } = 80;
-    public static int SellRelicMinGold { get; set; } = 30;
-    public static int SellCommonPotionPrice { get; set; } = 20;
-    public static int SellUncommonPotionPrice { get; set; } = 30;
-    public static int SellRarePotionPrice { get; set; } = 40;
-    public static int SellPotionMinGold { get; set; } = 15;
+    public static RelicSellPreset RelicSellRulePreset { get; set; } = ConfigSchema.RelicSellRulePreset.Default;
+    public static bool AllowUsedUpRelics { get; set; } = ConfigSchema.AllowUsedUpRelics.Default;
+    public static bool AllowUponPickupRelics { get; set; } = ConfigSchema.AllowUponPickupRelics.Default;
+    public static bool AllowWaxRelics { get; set; } = ConfigSchema.AllowWaxRelics.Default;
+    public static bool AllowMeltedRelics { get; set; } = ConfigSchema.AllowMeltedRelics.Default;
+    public static bool AllowDisabledRelics { get; set; } = ConfigSchema.AllowDisabledRelics.Default;
+    public static bool AllowStarterRelics { get; set; } = ConfigSchema.AllowStarterRelics.Default;
+    public static bool AllowAncientRelics { get; set; } = ConfigSchema.AllowAncientRelics.Default;
+    public static bool AllowEventRelics { get; set; } = ConfigSchema.AllowEventRelics.Default;
+    public static int SellCommonRelicPrice { get; set; } = ConfigSchema.SellCommonRelicPrice.Default;
+    public static int SellUncommonRelicPrice { get; set; } = ConfigSchema.SellUncommonRelicPrice.Default;
+    public static int SellRareRelicPrice { get; set; } = ConfigSchema.SellRareRelicPrice.Default;
+    public static int SellShopRelicPrice { get; set; } = ConfigSchema.SellShopRelicPrice.Default;
+    public static int SellAncientRelicPrice { get; set; } = ConfigSchema.SellAncientRelicPrice.Default;
+    public static int SellStarterRelicPrice { get; set; } = ConfigSchema.SellStarterRelicPrice.Default;
+    public static int SellEventRelicPrice { get; set; } = ConfigSchema.SellEventRelicPrice.Default;
+    public static int SellRelicMinGold { get; set; } = ConfigSchema.SellRelicMinGold.Default;
+    public static int SellCommonPotionPrice { get; set; } = ConfigSchema.SellCommonPotionPrice.Default;
+    public static int SellUncommonPotionPrice { get; set; } = ConfigSchema.SellUncommonPotionPrice.Default;
+    public static int SellRarePotionPrice { get; set; } = ConfigSchema.SellRarePotionPrice.Default;
+    public static int SellPotionMinGold { get; set; } = ConfigSchema.SellPotionMinGold.Default;
 
-    public static bool EnableRemovalEnchantRandom { get; set; } = true;
-    public static bool EnableEnchantService { get; set; } = true;
-    public static int EnchantStartShopVisit { get; set; } = 4;
-    public static float EnchantReplaceChance { get; set; } = 0.3f;
-    public static int EnchantCost { get; set; } = 105;
-    public static Vector2I EnchantAmountRange { get; set; } = new Vector2I(1, 2);
-    public static Vector2I EnchantCardCountRange { get; set; } = new Vector2I(1, 2);
-    public static bool EnableRandomTeammateGiftService { get; set; } = true;
-    public static Vector2I GiftServiceCardCountRange { get; set; } = new Vector2I(1, 1);
-    public static int GiftServiceBaseCost { get; set; } = 85;
-    public static int GiftServiceStepCost { get; set; } = 55;
+    public static bool EnableRemovalEnchantRandom { get; set; } = ConfigSchema.EnableRemovalEnchantRandom.Default;
+    public static bool EnableEnchantService { get; set; } = ConfigSchema.EnableEnchantService.Default;
+    public static int EnchantStartShopVisit { get; set; } = ConfigSchema.EnchantStartShopVisit.Default;
+    public static float EnchantReplaceChance { get; set; } = ConfigSchema.EnchantReplaceChance.Default;
+    public static int EnchantCost { get; set; } = ConfigSchema.EnchantCost.Default;
+    public static Vector2I EnchantAmountRange { get; set; } = new(
+        ConfigSchema.EnchantAmount.DefaultMin,
+        ConfigSchema.EnchantAmount.DefaultMax);
+    public static Vector2I EnchantCardCountRange { get; set; } = new(
+        ConfigSchema.EnchantCardCount.DefaultMin,
+        ConfigSchema.EnchantCardCount.DefaultMax);
+    public static bool EnableRandomTeammateGiftService { get; set; } = ConfigSchema.EnableRandomTeammateGiftService.Default;
+    public static Vector2I GiftServiceCardCountRange { get; set; } = new(
+        ConfigSchema.GiftServiceCardCount.DefaultMin,
+        ConfigSchema.GiftServiceCardCount.DefaultMax);
+    public static int GiftServiceBaseCost { get; set; } = ConfigSchema.GiftServiceBaseCost.Default;
+    public static int GiftServiceStepCost { get; set; } = ConfigSchema.GiftServiceStepCost.Default;
 }
