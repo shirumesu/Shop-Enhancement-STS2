@@ -70,28 +70,20 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     [ConfigHoverTip]
     public static RelicSellPreset RelicSellRulePreset { get; set; } = ConfigSchema.RelicSellRulePreset.Default;
 
-    [ConfigHoverTip]
     public static bool AllowStarterRelics { get; set; } = ConfigSchema.AllowStarterRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowAncientRelics { get; set; } = ConfigSchema.AllowAncientRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowEventRelics { get; set; } = ConfigSchema.AllowEventRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowWaxRelics { get; set; } = ConfigSchema.AllowWaxRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowMeltedRelics { get; set; } = ConfigSchema.AllowMeltedRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowUsedUpRelics { get; set; } = ConfigSchema.AllowUsedUpRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowUponPickupRelics { get; set; } = ConfigSchema.AllowUponPickupRelics.Default;
 
-    [ConfigHoverTip]
     public static bool AllowDisabledRelics { get; set; } = ConfigSchema.AllowDisabledRelics.Default;
 
     [ConfigSection("SellPrices")]
@@ -184,6 +176,7 @@ public class ShopEnhancementBaseLibConfig : SimpleModConfig
     public override void SetupConfigUI(Control optionContainer)
     {
         base.SetupConfigUI(optionContainer);
+        RelicCategoryGallery.Attach(optionContainer);
 
         _optionContainer = optionContainer;
         NConfigCollapsibleSection presetSection = CreateCollapsibleSection(
