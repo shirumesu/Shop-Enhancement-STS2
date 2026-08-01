@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.ControllerInput;
 using MegaCrit.Sts2.Core.Entities.CardRewardAlternatives;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Rewards;
@@ -15,40 +15,26 @@ namespace ShopEnhancement.Patches;
 [HarmonyPatch(typeof(CardRewardAlternative), nameof(CardRewardAlternative.Generate))]
 public static class CardRewardAlternativePatches
 {
+    private static readonly PropertyInfo OnSelectProperty =
+        AccessTools.Property(typeof(CardRewardAlternative), nameof(CardRewardAlternative.OnSelect));
+
+    private static readonly PropertyInfo AfterSelectedProperty =
+        AccessTools.Property(typeof(CardRewardAlternative), nameof(CardRewardAlternative.AfterSelected));
+
     [HarmonyPostfix]
     public static void Generate_Postfix(CardReward cardReward, ref IReadOnlyList<CardRewardAlternative> __result)
     {
         if (!ShopEnhancementConfig.EnableSkipCardRewardGold) return;
 
-        // Convert to list to modify
-        var list = __result.ToList();
-        var skipOption = list.FirstOrDefault(x => x.OptionId == "Skip");
-
-        if (skipOption != null)
+        CardRewardAlternative? skipOption = __result.FirstOrDefault(x => x.OptionId == "Skip");
+        if (skipOption == null)
         {
-            // Create a new option with the reward logic
-            // We use the same OptionId "Skip" to keep compatibility, but we intercept the OnSelect
-            var newSkipOption = new CardRewardAlternative(
-                "Skip", // Keep ID as "Skip"
-                () => {
-                    // Execute our reward logic
-                    return TaskHelper.RunSafely(GiveSkipReward(cardReward.Player));
-                },
-                PostAlternateCardRewardAction.EndSelectionAndCompleteReward
-            );
-
-            // Force the hotkey to be "Cancel" (Esc/B) so that:
-            // 1. It matches the original Skip button behavior (users expect Esc to skip)
-            // 2. Our NCardRewardAlternativeButtonPatches can recognize it and add the gold hint
-            AccessTools.Field(typeof(CardRewardAlternative), "<Hotkey>k__BackingField").SetValue(newSkipOption, (string)MegaInput.cancel);
-            
-            // Replace the old option
-            int index = list.IndexOf(skipOption);
-            list[index] = newSkipOption;
-            
-            // Assign back to result
-            __result = list;
+            return;
         }
+
+        Func<Task> onSelect = () => TaskHelper.RunSafely(GiveSkipReward(cardReward.Player));
+        OnSelectProperty.SetValue(skipOption, onSelect);
+        AfterSelectedProperty.SetValue(skipOption, PostAlternateCardRewardAction.EndSelectionAndCompleteReward);
     }
 
     private static async Task GiveSkipReward(Player player)

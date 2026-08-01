@@ -1,24 +1,25 @@
+using System.Reflection;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.ControllerInput;
 using MegaCrit.Sts2.Core.Localization;
-using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
+using ShopEnhancement.Compatibility;
 
 namespace ShopEnhancement.Patches;
 
-[HarmonyPatch(typeof(NCardRewardAlternativeButton), nameof(NCardRewardAlternativeButton.Create))]
+[HarmonyPatch]
 public static class NCardRewardAlternativeButtonPatches
 {
+    private static MethodBase TargetMethod()
+    {
+        return V0110Compatibility.ResolveCardRewardButtonCreate();
+    }
+
     [HarmonyPrefix]
-    public static void Create_Prefix(ref string optionName, string hotkey)
+    public static void Create_Prefix(ref string optionName, object[] __args)
     {
         if (!ShopEnhancementConfig.EnableSkipCardRewardGold) return;
 
-        // Heuristic: Identify the "Skip" button by its hotkey (MegaInput.cancel)
-        // This is safer than relying on the localized text string.
-        // CardRewardAlternative sets Hotkey to MegaInput.cancel ONLY for DismissScreenAndKeepReward actions (like Skip).
-        if (hotkey == MegaInput.cancel)
+        if (__args.Length > 1 && V0110Compatibility.IncludesCancelHotkey(__args[1]))
         {
-            // Append gold amount to the label
             int gold = ShopEnhancementConfig.SkipCardRewardGoldAmount;
             if (gold > 0)
             {

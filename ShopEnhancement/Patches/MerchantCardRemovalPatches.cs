@@ -26,6 +26,7 @@ using MegaCrit.Sts2.Core.Platform;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using ShopEnhancement;
+using ShopEnhancement.Compatibility;
 using ShopEnhancement.Network;
 
 namespace ShopEnhancement.Patches;
@@ -479,7 +480,8 @@ public static class MerchantCardRemovalPatches
 
     private static List<Player> GetAvailableGiftTargets(Player sender)
     {
-        IReadOnlyCollection<ulong>? connectedIds = RunManager.Instance.RunLobby?.ConnectedPlayerIds;
+        IReadOnlyCollection<ulong>? connectedIds =
+            V0110Compatibility.GetConnectedPlayerIds(RunManager.Instance.RunLobby);
         return sender.RunState.Players
             .Where(p => p.NetId != sender.NetId)
             .Where(p => connectedIds == null || connectedIds.Count == 0 || connectedIds.Contains(p.NetId))
@@ -519,16 +521,37 @@ public static class MerchantCardRemovalPatches
 
     private static float ComputeRoll(string seed, int shopVisitIndex, string salt)
     {
-        int hash = StringHelper.GetDeterministicHashCode($"{seed}|{shopVisitIndex}|{salt}");
+        int hash = ComputeStableHash($"{seed}|{shopVisitIndex}|{salt}");
         uint unsigned = unchecked((uint)hash);
         return (unsigned % 1000000) / 1000000f;
     }
 
     private static float ComputeDerivedRoll(float sourceRoll, string salt)
     {
-        int hash = StringHelper.GetDeterministicHashCode($"{sourceRoll:F6}|{salt}");
+        int hash = ComputeStableHash($"{sourceRoll:F6}|{salt}");
         uint unsigned = unchecked((uint)hash);
         return (unsigned % 1000000) / 1000000f;
+    }
+
+    private static int ComputeStableHash(string value)
+    {
+        unchecked
+        {
+            int hash1 = 352654597;
+            int hash2 = hash1;
+            for (int i = 0; i < value.Length; i += 2)
+            {
+                hash1 = ((hash1 << 5) + hash1) ^ value[i];
+                if (i == value.Length - 1)
+                {
+                    break;
+                }
+
+                hash2 = ((hash2 << 5) + hash2) ^ value[i + 1];
+            }
+
+            return hash1 + hash2 * 1566083941;
+        }
     }
 
     internal static void IncrementVisit()
