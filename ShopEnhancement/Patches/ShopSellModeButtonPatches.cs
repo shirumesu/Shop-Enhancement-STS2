@@ -88,8 +88,19 @@ public static class ShopSellModeButtonPatches
         holder.Label = label;
         holder.Panel = panel;
 
-        ApplyButtonVisual(holder, false);
+        ApplyButtonVisual(holder, SellModeState.IsEnabled(__instance));
         UpdateButtonVisibility(__instance);
+    }
+
+    [HarmonyPatch(nameof(NMerchantInventory.Open))]
+    [HarmonyPostfix]
+    public static void Open_Postfix(NMerchantInventory __instance)
+    {
+        if (!ShopEnhancementConfig.EnableSellMode)
+            return;
+
+        SellModeState.Set(__instance, true);
+        ForceUpdateVisuals(__instance);
     }
 
     [HarmonyPatch("Close")]
@@ -110,6 +121,15 @@ public static class ShopSellModeButtonPatches
     public static void OnActiveScreenUpdated_Postfix(NMerchantInventory __instance)
     {
         UpdateButtonVisibility(__instance);
+    }
+
+    public static void ForceUpdateVisuals(NMerchantInventory instance)
+    {
+        if (!Buttons.TryGetValue(instance, out var holder))
+            return;
+
+        ApplyButtonVisual(holder, SellModeState.IsEnabled(instance));
+        UpdateButtonVisibility(instance);
     }
 
     private static void UpdateButtonVisibility(NMerchantInventory instance)

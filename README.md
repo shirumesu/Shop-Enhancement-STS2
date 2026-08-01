@@ -77,7 +77,7 @@ This mod includes the following core functional adjustments:
 - **One-Click Unlock**: Automatically unlocks all cards, relics, potions, and **all characters** (by revealing all epochs) when entering the main menu. No need for tedious grinding, experience all game content directly.
 
 ### 6. Sell Mode
-- **Recycle Resources**: Click the "Enable Sell Mode" button in the shop interface, then **Right-Click** on any Relic or Potion to sell it.
+- **Recycle Resources**: Sell Mode is enabled automatically when you enter the shop. **Right-Click** any Relic or Potion to sell it, or use the bottom-left button to turn Sell Mode off.
 - **Pricing**:
     - **Relics**: Sells for **35%** of the merchant price. Special relics (Boss/Starter/Event) have fixed base prices.
         - *Designer Note: Boss relics are now quite valuable, while event relics fetch less.*

@@ -59,7 +59,7 @@
   "SHOPENHANCEMENT-CROSS_CLASS_CARD_CHANCE.title": "Cross-Class Card Chance",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.title": "Enable Sell Mode",
   "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.title": "Enable Sell Mode",
-  "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.desc": "Click Sell Mode in the bottom-left corner of the shop screen, then right-click a relic or potion to sell it. The settings below are not shop purchase prices; they control how much Gold you receive when selling items to the shop.",
+  "SHOPENHANCEMENT-ENABLE_SELL_MODE.hover.desc": "Sell Mode turns on automatically when you enter a shop. Right-click a relic or potion to sell it, or use the bottom-left button to turn Sell Mode off. The settings below are not shop purchase prices; they control how much Gold you receive when selling items to the shop.",
   "SHOPENHANCEMENT-ENABLE_SELL_PRICE_VARIANCE.title": "Enable Sell Price Variance",
   "SHOPENHANCEMENT-SELL_PRICE_VARIANCE.title": "Sell Price Variance",
   "SHOPENHANCEMENT-SELL_PRICE_VARIANCE.hover.title": "Sell Price Variance",

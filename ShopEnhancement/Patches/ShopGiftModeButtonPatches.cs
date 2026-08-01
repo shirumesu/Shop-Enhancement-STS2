@@ -90,10 +90,7 @@ public static class ShopGiftModeButtonPatches
                 if (SellModeState.IsEnabled(__instance))
                 {
                     SellModeState.Set(__instance, false);
-                    // We might need to refresh Sell Mode button visual, but we don't have easy access to it here.
-                    // Ideally, SellModeState.Set should trigger an event or we check in Update.
-                    // For now, let's assume user handles it or we accept both being visually "on" but logic handles priority.
-                    // Actually, let's just disable it in logic if needed.
+                    ShopSellModeButtonPatches.ForceUpdateVisuals(__instance);
                 }
             }
 
