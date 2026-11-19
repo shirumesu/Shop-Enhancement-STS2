@@ -1,23 +1,7 @@
-# Build output
+.godot/
+.vs/
+.idea/
 bin/
 obj/
-.godot/
-public/
-/android/
-
-# IDE and local settings
-.idea/
-.vs/
-Properties/
-.editorconfig
-*.code-workspace
-*.DotSettings
+dist/
 *.user
-
-# Local Steam Workshop upload files
-.workshop/
-
-# Gei spec system - internal agent state, not product source
-spec/
-# Local MSBuild overrides
-ShopEnhancement.local.props

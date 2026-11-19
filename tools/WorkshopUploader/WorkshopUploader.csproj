@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Uploads the packed mod (dist/ShopEnhancement) to its existing Steam Workshop item,
+    using the Steam client that is already running and logged in (no credentials involved).
+
+    Arguments: "check" (read-only: verify the build and print the item) or
+    "upload <changenote.txt>". Pass them to dotnet run after the usual separator.
+    Run from the repository root; item settings come from workshop.json there.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Sts2Dir Condition="'$(Sts2Dir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 2868840', 'InstallLocation', null, RegistryView.Registry64, RegistryView.Registry32))</Sts2Dir>
+    <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Steamworks.NET">
+      <HintPath>$(Sts2DataDir)\Steamworks.NET.dll</HintPath>
+    </Reference>
+    <None Include="$(Sts2DataDir)\steam_api64.dll" Link="steam_api64.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CheckGamePath" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(Sts2DataDir)\Steamworks.NET.dll')" Text="Steamworks.NET.dll not found under '$(Sts2DataDir)'. Pass -p:Sts2Dir=&lt;game install dir&gt;." />
+  </Target>
+</Project>

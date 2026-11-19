@@ -1,0 +1,6 @@
+{
+  "appId": 2868840,
+  "publishedFileId": 3754825413,
+  "contentDir": "dist/ShopEnhancement",
+  "requiredFiles": ["mod_manifest.json", "ShopEnhancement.dll", "ShopEnhancement.pck"]
+}

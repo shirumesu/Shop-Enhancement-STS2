@@ -1,118 +1,60 @@
-﻿<Project Sdk="Godot.NET.Sdk/4.5.1" InitialTargets="CheckDependencyPaths">
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>true</ImplicitUsings>
-        <Nullable>enable</Nullable> <!--Makes code analysis regarding null values stricter.-->
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <AssemblyName>ShopEnhancement</AssemblyName>
-        <GodotDisabledSourceGenerators>GodotPluginsInitializer</GodotDisabledSourceGenerators>
-        <ModOutputDir Condition="'$(ModOutputDir)' == ''">$(MSBuildProjectDirectory)\public\$(AssemblyName)</ModOutputDir>
-    </PropertyGroup>
+<Project Sdk="Godot.NET.Sdk/4.5.1" InitialTargets="CheckGamePath">
+  <!--
+    Build:    dotnet build -c Release
+    Output:   dist/ShopEnhancement/{ShopEnhancement.dll, .pdb, .pck, mod_manifest.json}
+    Install:  dotnet build -c Release -p:InstallToGame=true
+              (copies the output to <game>/mods/ShopEnhancement; the game prefers a local mod over the
+              workshop copy when the local mod_manifest.json version is >= the workshop one)
+    Paths:    the game is found through its Steam uninstall registry entry; override with -p:Sts2Dir=...
+    BaseLib:  compiled against the NuGet package pinned to the manifest's BaseLib min_version, so the
+              build fails if the code uses BaseLib API newer than the version we claim to support.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>ShopEnhancement</RootNamespace>
+    <AssemblyName>ShopEnhancement</AssemblyName>
+    <Version>1.0.0</Version>
+    <!-- Logged stack traces show project-relative source paths instead of this machine's absolute ones. -->
+    <PathMap>$(MSBuildProjectDirectory)\=.\</PathMap>
+    <!-- The game is built for x64 while mods are MSIL. -->
+    <NoWarn>$(NoWarn);MSB3270</NoWarn>
 
-    <PropertyGroup>
-        <!-- The mod assembly is MSIL while local game assemblies are platform-specific. -->
-        <NoWarn>$(NoWarn);MSB3270</NoWarn>
-    </PropertyGroup>
+    <Sts2Dir Condition="'$(Sts2Dir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 2868840', 'InstallLocation', '', RegistryView.Registry64, RegistryView.Registry32))</Sts2Dir>
+    <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+    <ModDistDir Condition="'$(ModDistDir)' == ''">$(MSBuildProjectDirectory)\dist\ShopEnhancement</ModDistDir>
+    <ModInstallDir>$(Sts2Dir)\mods\ShopEnhancement</ModInstallDir>
+  </PropertyGroup>
 
-    <!-- OS Detection -->
-    <PropertyGroup>
-        <IsWindows>false</IsWindows>
-        <IsLinux>false</IsLinux>
-        <IsOSX>false</IsOSX>
-        <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
-        <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
-        <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
-    </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="sts2" HintPath="$(Sts2DataDir)\sts2.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)\0Harmony.dll" Private="false" />
+    <!-- Keep in sync with the BaseLib "min_version" in mod_manifest.json. -->
+    <PackageReference Include="Alchyr.Sts2.BaseLib" Version="[3.3.5]" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
 
-    <!-- Windows -->
-    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
-        <SteamRoot Condition="'$(SteamRoot)' == ''">$(registry:HKEY_CURRENT_USER\Software\Valve\Steam@SteamPath)</SteamRoot>
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == '' and '$(SteamRoot)' != ''">$(SteamRoot)\steamapps</SteamLibraryPath>
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_windows_x86_64</Sts2DataDir>
-    </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="dist/**;tools/**" />
+    <None Remove="dist/**" />
+  </ItemGroup>
 
-    <!-- Linux -->
-    <PropertyGroup Condition="'$(IsLinux)' == 'true'">
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/.local/share/Steam/steamapps</SteamLibraryPath>
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
-    </PropertyGroup>
+  <Target Name="CheckGamePath">
+    <Error Condition="'$(Sts2Dir)' == '' or !Exists('$(Sts2DataDir)\sts2.dll')"
+           Text="Slay the Spire 2 not found (Sts2Dir='$(Sts2Dir)'). Pass -p:Sts2Dir=&lt;game folder&gt;." />
+  </Target>
 
-    <!-- macOS -->
-    <PropertyGroup Condition="'$(IsOSX)' == 'true'">
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <MacArm64DataDir>$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</MacArm64DataDir>
-        <MacX64DataDir>$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</MacX64DataDir>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and Exists('$(MacArm64DataDir)')">$(MacArm64DataDir)</Sts2DataDir>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(MacX64DataDir)</Sts2DataDir>
-    </PropertyGroup>
+  <Target Name="PackMod" AfterTargets="Build">
+    <Exec Command="python -I &quot;$(MSBuildProjectDirectory)\tools\pack_mod.py&quot; --project &quot;$(MSBuildProjectDirectory)&quot; --dll &quot;$(TargetPath)&quot; --out &quot;$(ModDistDir)&quot;" />
+  </Target>
 
-    <Import Project="ShopEnhancement.local.props" Condition="Exists('ShopEnhancement.local.props')" />
-
-    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
-        <Reference Include="0Harmony">
-            <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="sts2">
-            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
-
+  <Target Name="InstallMod" AfterTargets="PackMod" Condition="'$(InstallToGame)' == 'true'">
     <ItemGroup>
-        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="3.3.5" PrivateAssets="All" />
-        <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="*" />
-        <AdditionalFiles Include="ShopEnhancement\localization\**\*.json" />
+      <_ModFiles Include="$(ModDistDir)\*" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="materials\**" />
-        <Compile Remove="shaders\**" />
-        <Compile Remove="images\**" />
-        <EmbeddedResource Remove="materials\**" />
-        <EmbeddedResource Remove="shaders\**" />
-        <EmbeddedResource Remove="images\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include=".gitignore" />
-        <None Include="mod_manifest.json" />
-        <None Include="project.godot" />
-        <None Include="ShopEnhancement\**" />
-    </ItemGroup>
-
-    <Target Name="CheckDependencyPaths">
-        <Error Text="Slay the Spire 2 data not found at path '$(Sts2DataDir)'. Override Sts2Path or Sts2DataDir in ShopEnhancement.local.props or on the command line."
-               Condition="'$(Sts2DataDir)' == '' or !Exists('$(Sts2DataDir)')" />
-    </Target>
-
-    <Target Name="CopyToLocalModOutputOnBuild" AfterTargets="PostBuildEvent" Condition="'$(ShopEnhancementGodotExport)' != 'true'">
-        <Message Text="Copying .dll and manifest to local mod output folder: $(ModOutputDir)" Importance="high" />
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModOutputDir)\" />
-        <Copy SourceFiles="mod_manifest.json" DestinationFolder="$(ModOutputDir)\" />
-    </Target>
-
-    <Target Name="ValidateReleasePublishDependencies" BeforeTargets="Publish" Condition="'$(Configuration)' == 'Release' and '$(ShopEnhancementGodotExport)' != 'true'">
-        <Delete Files="$(ModOutputDir)/$(AssemblyName).pck" />
-        <Error Text="Godot 4.5.1 Mono is required for Release publishing. Set GodotPath in ShopEnhancement.local.props or on the command line."
-               Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')" />
-    </Target>
-
-    <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(ShopEnhancementGodotExport)' != 'true'">
-        <Message Text="Exporting Godot .pck to local mod output folder: $(ModOutputDir)" Importance="high" />
-        <ItemGroup>
-            <StaleGodotPackTempFiles Include="$(ModOutputDir)/$(AssemblyName).pck*.tmp" />
-            <ExistingGodotPack Include="$(ModOutputDir)/$(AssemblyName).pck" />
-        </ItemGroup>
-        <Delete Files="@(ExistingGodotPack)" />
-        <Delete Files="@(StaleGodotPackTempFiles)" />
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(ModOutputDir)/$(AssemblyName).pck&quot;" EnvironmentVariables="ShopEnhancementGodotExport=true;MSBUILDDISABLENODEREUSE=1;DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER=1" />
-    </Target>
-
-    <Target Name="GodotPublishSkipped" AfterTargets="Publish" Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')">
-        <Message Text="Skipping Godot .pck export because GodotPath is not configured." Importance="high" />
-    </Target>
+    <Copy SourceFiles="@(_ModFiles)" DestinationFolder="$(ModInstallDir)" />
+    <Message Importance="high" Text="Installed ShopEnhancement to $(ModInstallDir)" />
+  </Target>
 </Project>

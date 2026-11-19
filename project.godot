@@ -1,27 +1,14 @@
-; Engine configuration file.
-; It's best edited using the editor UI and not directly,
-; since the parameters that go here are not all obvious.
-;
-; Format:
-;   [section] ; section goes between []
-;   param=value ; assign values to parameters
+; Godot 4.5 project file. Lets the folder be opened in the Godot editor and
+; anchors res:// for the mod's assets (ShopEnhancement/**).
+; The mod's .pck is produced by tools/pack_mod.py during `dotnet build`, not by a Godot export.
 
 config_version=5
-
-[animation]
-
-compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="ShopEnhancement"
-config/features=PackedStringArray("4.5", "C#", "Mobile")
-config/icon="res://icon.svg"
+config/features=PackedStringArray("4.5", "C#")
 
 [dotnet]
 
 project/assembly_name="ShopEnhancement"
-
-[rendering]
-
-renderer/rendering_method="mobile"
